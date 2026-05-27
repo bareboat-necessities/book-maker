@@ -9,6 +9,12 @@
 \setlength{\columnsep}{0.25in}
 
 % ============================================================
+% Core math packages
+% ============================================================
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+% ============================================================
 % Fonts: compile with LuaLaTeX
 % ============================================================
 \usepackage{fontspec}
@@ -19,15 +25,13 @@
 \setmonofont{DejaVu Sans Mono}
 \setmathfont{Latin Modern Math}
 
-% Do NOT load amssymb or amsfonts together with unicode-math.
+% Do NOT load amssymb, amsfonts, or bm with unicode-math.
 % unicode-math already defines many AMS-style symbols.
+% Use \symbfit, \symbf, and \symbfsf instead of \bm.
 
 % ============================================================
-% Math packages
+% Extra math utilities
 % ============================================================
-\usepackage{amsmath}
-\usepackage{mathtools}
-\usepackage{bm}
 \usepackage{tensor}
 \usepackage{cancel}
 
@@ -90,10 +94,11 @@
 \newcommand{\Cinfty}{C^\infty}
 
 % Scalars, vectors, matrices, tensors
+% unicode-math-native bold notation; works for Greek too.
 \newcommand{\scal}[1]{#1}
-\newcommand{\vct}[1]{\bm{#1}}
-\newcommand{\mat}[1]{\bm{#1}}
-\newcommand{\ten}[1]{\bm{\mathsf{#1}}}
+\newcommand{\vct}[1]{\symbfit{#1}}   % bold italic vector
+\newcommand{\mat}[1]{\symbf{#1}}     % bold upright matrix
+\newcommand{\ten}[1]{\symbfsf{#1}}   % bold sans-serif tensor
 
 % Unit vectors
 \newcommand{\ihat}{\hat{\vct{i}}}
@@ -127,7 +132,7 @@
 % Vector calculus
 \newcommand{\grad}{\nabla}
 \newcommand{\divg}{\nabla \cdot}
-\newcommand{\curl}{\nabla \times}
+\newcommand{\curlop}{\nabla \times}
 \newcommand{\rot}{\nabla \times}
 \newcommand{\laplace}{\Delta}
 
@@ -167,20 +172,26 @@
 \newcommand{\bigO}{\mathcal{O}}
 
 % Logic notation
-\newcommand{\Forall}{\forall}
-\newcommand{\Exists}{\exists}
-\newcommand{\ExistsOne}{\exists!}
-\newcommand{\NotExists}{\nexists}
-\newcommand{\Implies}{\Rightarrow}
-\newcommand{\ImpliedBy}{\Leftarrow}
-\newcommand{\Iff}{\Leftrightarrow}
-\newcommand{\And}{\land}
-\newcommand{\Or}{\lor}
-\newcommand{\Not}{\neg}
-\newcommand{\Therefore}{\therefore}
-\newcommand{\Because}{\because}
-\newcommand{\definedas}{\coloneqq}
-\newcommand{\definedasalt}{\triangleq}
+% Avoid generic names like \And, \Or, \Not because they collide with packages/classes.
+\newcommand{\lforall}{\forall}
+\newcommand{\lexists}{\exists}
+\newcommand{\lexistsone}{\exists!}
+\newcommand{\lnexists}{\nexists}
+
+\newcommand{\limplies}{\Rightarrow}
+\newcommand{\limpliedby}{\Leftarrow}
+\newcommand{\liff}{\Leftrightarrow}
+
+\newcommand{\landop}{\mathbin{\land}}
+\newcommand{\lorop}{\mathbin{\lor}}
+\newcommand{\lnotop}{\neg}
+
+\newcommand{\ltherefore}{\therefore}
+\newcommand{\lbecause}{\because}
+
+% Avoid unicode-math / mathtools \coloneqq warning.
+\newcommand{\definedas}{\mathrel{:=}}
+\newcommand{\definedasalt}{\mathrel{\triangleq}}
 
 % ============================================================
 % Metadata
@@ -805,7 +816,7 @@ The divergence of a vector field \(\vct{u}\) is
 
 The curl, also called the rotor in some traditions, is
 \[
-\curl \vct{u}.
+\curlop \vct{u}.
 \]
 
 The Laplacian is
@@ -1242,15 +1253,15 @@ PGFPlots can be used for plots directly inside LaTeX.
 
 SVG files can be included with the \texttt{svg} package:
 
-\[
+\begin{center}
 \texttt{\textbackslash includesvg[width=0.8\textbackslash columnwidth]\{device\}}
-\]
+\end{center}
 
 For example, if \texttt{device.svg} is in the same folder, use:
 
 \begin{figure}[h]
 \centering
-% Requires: latexmk -lualatex -shell-escape basics.tex
+% Requires: latexmk -lualatex -shell-escape this-file.tex
 % Requires Inkscape installed.
 % Uncomment when device.svg exists:
 % \includesvg[width=0.8\columnwidth]{device}
@@ -1308,7 +1319,7 @@ Matrices & $\mat{A}\in\R^{m\times n}$ & real \(m\)-by-\(n\) matrix \\
 Linear algebra & $\mat{A}\T,\mat{A}^{-1}$ & transpose, inverse \\
 Linear algebra & $\tr(\mat{A}),\determinant(\mat{A})$ & trace, determinant \\
 Calculus & $\dv{y}{x},\pdv{f}{x}$ & ordinary and partial derivatives \\
-Vector calculus & $\grad,\divg,\curl,\Delta$ & gradient, divergence, curl, Laplacian \\
+Vector calculus & $\grad,\divg,\curlop,\Delta$ & gradient, divergence, curl, Laplacian \\
 Complex & $\ii^2=-1$ & imaginary unit \\
 Fourier & $\FT,\IFT$ & Fourier transform and inverse transform \\
 Probability & $\E,\Var,\Cov$ & expectation, variance, covariance \\
