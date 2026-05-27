@@ -1,0 +1,425 @@
+\documentclass[11pt,twocolumn]{article}
+
+% ------------------------------------------------------------
+% Page layout
+% ------------------------------------------------------------
+\usepackage[letterpaper,margin=0.75in]{geometry}
+\usepackage{microtype}
+\usepackage{parskip}
+\setlength{\columnsep}{0.25in}
+
+% ------------------------------------------------------------
+% Fonts: use LuaLaTeX or XeLaTeX
+% ------------------------------------------------------------
+\usepackage{fontspec}
+\usepackage{unicode-math}
+
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+\setmathfont{Latin Modern Math}
+
+% ------------------------------------------------------------
+% Core math
+% ------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{tensor}
+\usepackage{cancel}
+\usepackage{mathrsfs}
+
+% ------------------------------------------------------------
+% Tables
+% ------------------------------------------------------------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{siunitx}
+
+\sisetup{
+  detect-all,
+  per-mode=symbol,
+  exponent-product=\cdot
+}
+
+% ------------------------------------------------------------
+% Figures, SVG, PGF/TikZ plots
+% ------------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{svg}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{stfloats}
+
+\pgfplotsset{compat=1.18}
+
+% Optional PGF libraries
+\usetikzlibrary{
+  arrows.meta,
+  calc,
+  positioning,
+  decorations.pathmorphing,
+  matrix
+}
+
+% ------------------------------------------------------------
+% Captions and references
+% ------------------------------------------------------------
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+% ------------------------------------------------------------
+% Common math macros
+% ------------------------------------------------------------
+
+% Sets and spaces
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+
+\newcommand{\Ltwo}{L^2}
+\newcommand{\Lp}[1]{L^{#1}}
+\newcommand{\Hsob}[1]{H^{#1}}
+\newcommand{\Cinfty}{C^\infty}
+
+% Scalars, vectors, matrices, tensors
+\newcommand{\scal}[1]{#1}
+\newcommand{\vct}[1]{\bm{#1}}
+\newcommand{\mat}[1]{\bm{#1}}
+\newcommand{\ten}[1]{\bm{\mathsf{#1}}}
+
+% Unit vectors
+\newcommand{\ihat}{\hat{\vct{i}}}
+\newcommand{\jhat}{\hat{\vct{j}}}
+\newcommand{\khat}{\hat{\vct{k}}}
+
+% Transpose, inverse, trace, determinant
+\newcommand{\T}{^{\mathsf{T}}}
+\newcommand{\inv}{^{-1}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\nullspace}{\operatorname{null}}
+\newcommand{\range}{\operatorname{range}}
+
+% Norms, inner products
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\inner}[2]{\left\langle #1, #2 \right\rangle}
+
+% Differential operators
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\pd}{\partial}
+\newcommand{\grad}{\nabla}
+\newcommand{\divg}{\nabla \cdot}
+\newcommand{\curl}{\nabla \times}
+\newcommand{\rot}{\nabla \times}
+\newcommand{\laplace}{\Delta}
+
+% Derivatives
+\newcommand{\dv}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+\newcommand{\dvtwo}[2]{\frac{\mathrm{d}^2 #1}{\mathrm{d} #2^2}}
+\newcommand{\pdv}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdvtwo}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+
+% Matrix exponential
+\newcommand{\expm}{\operatorname{expm}}
+
+% Complex / imaginary numbers
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\Imag}{\operatorname{Im}}
+
+% Fourier transform
+\newcommand{\FT}{\mathcal{F}}
+\newcommand{\IFT}{\mathcal{F}^{-1}}
+\newcommand{\fourier}[1]{\widehat{#1}}
+
+% Probability and statistics
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Normal}{\mathcal{N}}
+
+% Quaternions
+\newcommand{\quat}[1]{\mathbf{#1}}
+\newcommand{\qconj}[1]{#1^{*}}
+\newcommand{\qinv}[1]{#1^{-1}}
+\newcommand{\qmul}{\otimes}
+
+% Stochastic calculus
+\newcommand{\Wiener}{W_t}
+\newcommand{\ito}{\mathrm{d}}
+
+% Numerical methods
+\newcommand{\bigO}{\mathcal{O}}
+
+% ------------------------------------------------------------
+% Document metadata
+% ------------------------------------------------------------
+\title{Two-Column Mathematical Notes}
+\author{Mikhail Grushinskiy}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+A compact two-column template for mathematical writing with support for
+vector algebra, matrix methods, calculus, quaternions, tensors, Fourier
+analysis, PDEs, SDEs, numerical methods, tables, PGF charts, and SVG graphics.
+\end{abstract}
+
+\section{Vector and Matrix Algebra}
+
+Vectors are written in bold:
+\[
+\vct{x} =
+\begin{bmatrix}
+x_1 \\ x_2 \\ x_3
+\end{bmatrix},
+\qquad
+\mat{A} =
+\begin{bmatrix}
+a_{11} & a_{12} \\
+a_{21} & a_{22}
+\end{bmatrix}.
+\]
+
+A linear system is
+\[
+\mat{A}\vct{x} = \vct{b},
+\qquad
+\vct{x} = \mat{A}\inv \vct{b}.
+\]
+
+The matrix exponential is
+\[
+\vct{x}(t) = \exp(\mat{A}t)\vct{x}_0
+           = \expm(\mat{A}t)\vct{x}_0.
+\]
+
+\section{Calculus}
+
+A gradient, divergence, curl, and Laplacian are written as
+\[
+\grad f,
+\qquad
+\divg \vct{u},
+\qquad
+\curl \vct{u},
+\qquad
+\laplace f.
+\]
+
+Surface and volume integrals:
+\[
+\iint_{\partial \Omega} \vct{F} \cdot \vct{n}\,\dd S
+=
+\iiint_{\Omega} \divg \vct{F}\,\dd V.
+\]
+
+\section{Quaternions}
+
+A quaternion can be written as
+\[
+\quat{q}
+=
+q_0 + q_1\ihat + q_2\jhat + q_3\khat.
+\]
+
+Quaternion rotation may be written as
+\[
+\vct{v}' = \quat{q} \qmul \vct{v} \qmul \qconj{\quat{q}}.
+\]
+
+\section{Statistics}
+
+A Gaussian random vector:
+\[
+\vct{x} \sim \Normal(\vct{\mu}, \mat{\Sigma}).
+\]
+
+Mean and covariance:
+\[
+\E[\vct{x}] = \vct{\mu},
+\qquad
+\Cov[\vct{x}] = \E[(\vct{x}-\vct{\mu})(\vct{x}-\vct{\mu})\T].
+\]
+
+\section{Fourier Analysis}
+
+The Fourier transform is written as
+\[
+\fourier{f}(\omega)
+=
+\FT\{f(t)\}
+=
+\int_{-\infty}^{\infty}
+f(t)e^{-\ii \omega t}\,\dd t.
+\]
+
+The inverse transform is
+\[
+f(t)
+=
+\IFT\{\fourier{f}(\omega)\}
+=
+\frac{1}{2\pi}
+\int_{-\infty}^{\infty}
+\fourier{f}(\omega)e^{\ii \omega t}\,\dd \omega.
+\]
+
+\section{PDEs and SDEs}
+
+A diffusion PDE:
+\[
+\pdv{u}{t}
+=
+\alpha \laplace u.
+\]
+
+An Itô SDE:
+\[
+\ito X_t
+=
+a(X_t,t)\,\ito t
++
+b(X_t,t)\,\ito W_t.
+\]
+
+\section{Infinite Series and Limits}
+
+A Taylor expansion:
+\[
+f(x)
+=
+\sum_{n=0}^{\infty}
+\frac{f^{(n)}(a)}{n!}(x-a)^n.
+\]
+
+A limit:
+\[
+\lim_{h \to 0}
+\frac{f(x+h)-f(x)}{h}
+=
+\dv{f}{x}.
+\]
+
+\section{Tensors}
+
+A second-order tensor may be written as
+\[
+\ten{T}
+=
+T_{ij}\,\vct{e}_i \otimes \vct{e}_j.
+\]
+
+Using the \texttt{tensor} package:
+\[
+\tensor{T}{^i_j}
+=
+g^{ik}T_{kj}.
+\]
+
+\section{Numerical Methods}
+
+Forward Euler:
+\[
+y_{n+1}
+=
+y_n + h f(t_n,y_n)
++
+\bigO(h^2).
+\]
+
+Runge--Kutta notation:
+\[
+k_1 = f(t_n,y_n),
+\qquad
+k_2 = f\left(t_n+\frac{h}{2}, y_n+\frac{h}{2}k_1\right).
+\]
+
+\section{Tables}
+
+\begin{table}[h]
+\centering
+\caption{Example numerical results.}
+\begin{tabular}{lcc}
+\toprule
+Method & Error & Runtime \\
+\midrule
+Euler & \num{1.2e-2} & \SI{0.3}{ms} \\
+RK4   & \num{2.1e-5} & \SI{1.4}{ms} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{PGF Chart}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\columnwidth,
+    height=0.65\columnwidth,
+    xlabel={$x$},
+    ylabel={$f(x)$},
+    grid=major
+]
+\addplot[
+    domain=0:6.28,
+    samples=100
+]
+{sin(deg(x))};
+\end{axis}
+\end{tikzpicture}
+\caption{A PGFPlots sine curve.}
+\end{figure}
+
+\section{SVG Graphics}
+
+Place an SVG file in the same folder, for example \texttt{device.svg}, then use:
+
+\begin{figure}[h]
+\centering
+% Requires: latexmk -lualatex -shell-escape main.tex
+% Requires Inkscape installed.
+\includesvg[width=0.8\columnwidth]{device}
+\caption{Example SVG graphic.}
+\end{figure}
+
+\section{Wide Two-Column Figure}
+
+Use \texttt{figure*} for a figure spanning both columns.
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.85\textwidth,
+    height=0.28\textwidth,
+    xlabel={$t$},
+    ylabel={$x(t)$},
+    grid=major
+]
+\addplot[
+    domain=0:10,
+    samples=200
+]
+{exp(-0.2*x)*sin(deg(2*x))};
+\end{axis}
+\end{tikzpicture}
+\caption{A wide two-column PGF chart.}
+\end{figure*}
+
+\end{document}
