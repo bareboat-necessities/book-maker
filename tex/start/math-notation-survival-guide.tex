@@ -81,6 +81,21 @@
 % Common math macros
 % ============================================================
 
+% ------------------------------------------------------------
+% Paired delimiter helpers
+% Requires mathtools.
+% Use starred form for automatic sizing:
+%   \mparen*{...}, \mbracks*{...}, \mbraces*{...}
+% ------------------------------------------------------------
+\DeclarePairedDelimiter{\mparen}{\lparen}{\rparen}
+\DeclarePairedDelimiter{\mbracks}{\lbrack}{\rbrack}
+\DeclarePairedDelimiter{\mbraces}{\lbrace}{\rbrace}
+\DeclarePairedDelimiter{\mangles}{\langle}{\rangle}
+\DeclarePairedDelimiter{\mabs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\mnorm}{\lVert}{\rVert}
+\DeclarePairedDelimiter{\mfloor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\mceil}{\lceil}{\rceil}
+
 % Number systems and spaces
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\Z}{\mathbb{Z}}
@@ -253,6 +268,626 @@ In this document, the convention is:
 \qquad
 \text{operator } \mathcal{L}.
 \]
+
+\section{Alphabets and Symbol Styles}
+
+Modern mathematical notation uses different alphabets and font styles to
+separate different kinds of objects. The same letter can mean very different
+things depending on whether it is lowercase, uppercase, bold, italic,
+calligraphic, or hollow.
+
+\subsection{Latin Letters}
+
+Latin letters are the most common symbols in mathematics, physics, engineering,
+and numerical modeling.
+
+\begin{table}[h]
+\centering
+\caption{Common uses of Latin letters.}
+\begin{tabular}{lll}
+\toprule
+Symbol style & Example & Common meaning \\
+\midrule
+Lowercase italic & $x,y,t,n$ & scalar variables, indices, time \\
+Uppercase italic & $A,B,X,Y$ & sets, random variables, constants \\
+Bold lowercase & $\vct{x},\vct{v}$ & vectors \\
+Bold uppercase & $\mat{A},\mat{P}$ & matrices \\
+Calligraphic & $\mathcal{L},\mathcal{F}$ & operators, transforms, families \\
+Script & $\symscr{F},\symscr{L}$ & functionals, special families \\
+Hollow / blackboard & $\mathbb{R},\mathbb{C}$ & standard number systems \\
+Sans serif & $\mathsf{T},\mathsf{SO}$ & labels, groups, tensor styles \\
+Monospace & \texttt{code} & code, filenames, literal text \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Common lowercase Latin letters include
+\[
+a,b,c,\ldots,x,y,z.
+\]
+
+They often denote scalars:
+\[
+x \in \R,
+\qquad
+t \in \R,
+\qquad
+n \in \N.
+\]
+
+Common uppercase Latin letters include
+\[
+A,B,C,\ldots,X,Y,Z.
+\]
+
+They often denote matrices, sets, events, or random variables:
+\[
+\mat{A}\in\R^{m\times n},
+\qquad
+X \sim \Normal(\mu,\sigma^2),
+\qquad
+A \subseteq \Omega.
+\]
+
+\subsection{Greek Letters}
+
+Greek letters are widely used for angles, parameters, constants, eigenvalues,
+densities, probability quantities, and small perturbations.
+
+\begin{table*}[t]
+\centering
+\caption{Greek lowercase letters, approximate pronunciation, and common uses.}
+\begin{tabular}{llll}
+\toprule
+Symbol & Name & Approx. pronunciation & Common uses \\
+\midrule
+$\alpha$ & alpha & AL-fuh & coefficients, angles, diffusion constants \\
+$\beta$ & beta & BAY-tuh or BEE-tuh & coefficients, regression parameters \\
+$\gamma$ & gamma & GAM-uh & ratios, damping, Lorentz factor \\
+$\delta$ & delta & DEL-tuh & small change, variation, tolerance \\
+$\epsilon,\varepsilon$ & epsilon & EP-si-lon & small positive quantity, error \\
+$\zeta$ & zeta & ZAY-tuh & damping ratio, special functions \\
+$\eta$ & eta & AY-tuh or EE-tuh & efficiency, noise, learning rate \\
+$\theta,\vartheta$ & theta & THAY-tuh & angle, parameter \\
+$\iota$ & iota & eye-OH-tuh & rarely used scalar/index \\
+$\kappa$ & kappa & KAP-uh & curvature, condition number \\
+$\lambda$ & lambda & LAM-duh & eigenvalue, wavelength, rate \\
+$\mu$ & mu & MYOO & mean, coefficient, measure \\
+$\nu$ & nu & NOO & frequency, viscosity, degrees of freedom \\
+$\xi$ & xi & KSEE or ZAI & random variable, coordinate, noise \\
+$o$ & omicron & OM-i-cron & rarely used; looks like Latin \(o\) \\
+$\pi,\varpi$ & pi & PIE & constant, product, probability \\
+$\rho,\varrho$ & rho & ROH & density, correlation, radius \\
+$\sigma,\varsigma$ & sigma & SIG-muh & standard deviation, stress, scale \\
+$\tau$ & tau & TOW & time constant, delay, torque \\
+$\upsilon$ & upsilon & OOP-si-lon & rarely used \\
+$\phi,\varphi$ & phi & FEE or FAI & angle, phase, scalar field \\
+$\chi$ & chi & KAI & chi-square, characteristic function \\
+$\psi$ & psi & SIGH & wavefunction, stream function \\
+$\omega$ & omega & oh-MAY-guh & angular frequency \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Greek uppercase letters are also common:
+
+\begin{table}[h]
+\centering
+\caption{Greek uppercase letters and common uses.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common uses \\
+\midrule
+$\Gamma$ & Gamma & boundary, gamma function \\
+$\Delta$ & Delta & change, Laplacian, discriminant \\
+$\Theta$ & Theta & parameter set, asymptotic order \\
+$\Lambda$ & Lambda & diagonal eigenvalue matrix \\
+$\Xi$ & Xi & random matrix, special variables \\
+$\Pi$ & Pi & product, projection, probability law \\
+$\Sigma$ & Sigma & covariance matrix, summation object \\
+$\Phi$ & Phi & state transition matrix, CDF \\
+$\Psi$ & Psi & wavefunction, basis matrix \\
+$\Omega$ & Omega & domain, sample space, asymptotic lower bound \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Examples:
+\[
+\theta \text{ may denote an angle},
+\qquad
+\lambda \text{ may denote an eigenvalue},
+\qquad
+\mat{\Sigma} \text{ may denote covariance}.
+\]
+
+A Gaussian random vector is often written as
+\[
+\vct{x} \sim \Normal(\vct{\mu},\mat{\Sigma}),
+\]
+where \(\vct{\mu}\) is the mean vector and \(\mat{\Sigma}\) is the covariance
+matrix.
+
+\subsection{Italic, Upright, and Bold Conventions}
+
+In most mathematical publications, single-letter variables are italic:
+\[
+x,\quad y,\quad t,\quad n.
+\]
+
+Named functions and operators are upright:
+\[
+\sin x,
+\qquad
+\cos x,
+\qquad
+\log x,
+\qquad
+\exp x.
+\]
+
+This is why one writes
+\[
+\sin(\omega t)
+\]
+rather than treating ``sin'' as three multiplied variables \(s i n\).
+
+Vectors are often bold italic:
+\[
+\vct{x},\quad \vct{v},\quad \vct{\omega}.
+\]
+
+Matrices are often bold upright or bold capital letters:
+\[
+\mat{A},\quad \mat{P},\quad \mat{R}.
+\]
+
+Tensors are sometimes written as bold sans-serif:
+\[
+\ten{T},\quad \ten{C}.
+\]
+
+The exact convention varies by field, but the important rule is consistency.
+
+\subsection{Capitalization Conventions}
+
+Lowercase and uppercase versions of the same letter often represent related
+but different objects:
+\[
+x
+\quad
+\text{versus}
+\quad
+X.
+\]
+
+Common patterns include:
+\[
+x \text{ is a scalar value},
+\qquad
+X \text{ is a random variable},
+\]
+\[
+p(x) \text{ is a density},
+\qquad
+P \text{ is a probability law or matrix}.
+\]
+
+In linear systems, one often sees
+\[
+\vct{x}_{k+1} = \mat{A}\vct{x}_k,
+\]
+where \(\vct{x}_k\) is a vector state and \(\mat{A}\) is a matrix.
+
+\subsection{Calligraphic, Script, and Hollow Letters}
+
+Calligraphic letters are often used for operators, transforms, and families:
+\[
+\mathcal{L},
+\qquad
+\mathcal{F},
+\qquad
+\mathcal{A}.
+\]
+
+Examples:
+\[
+\mathcal{F}\{f(t)\}
+=
+\fourier{f}(\omega),
+\qquad
+\mathcal{L}u=f.
+\]
+
+Script letters are often used for functionals, special families, or abstract
+objects:
+\[
+\symscr{F},
+\qquad
+\symscr{L},
+\qquad
+\symscr{P}.
+\]
+
+For example, a functional may be written as
+\[
+\symscr{J}[u]
+=
+\int_{\Omega}
+\left(
+\frac{1}{2}\abs{\grad u}^{2}
+-
+fu
+\right)\dd x.
+\]
+
+Hollow, or blackboard-bold, letters usually denote standard number systems:
+\[
+\mathbb{N},
+\qquad
+\mathbb{Z},
+\qquad
+\mathbb{Q},
+\qquad
+\mathbb{R},
+\qquad
+\mathbb{C}.
+\]
+
+They can also denote expectation and probability:
+\[
+\mathbb{E}[X],
+\qquad
+\mathbb{P}(A).
+\]
+
+\subsection{Common Publication Conventions}
+
+Different fields use slightly different conventions, but the following are
+common:
+
+\begin{table}[h]
+\centering
+\caption{Typical publication conventions.}
+\begin{tabular}{ll}
+\toprule
+Notation & Typical meaning \\
+\midrule
+$x$ & scalar variable \\
+$\vct{x}$ & vector \\
+$\mat{A}$ & matrix \\
+$\ten{T}$ & tensor \\
+$X$ & random variable or set \\
+$\Omega$ & domain or sample space \\
+$\partial\Omega$ & boundary of a domain \\
+$\mathcal{L}$ & operator or transform \\
+$\symscr{J}$ & functional \\
+$\mathbb{R}$ & real numbers \\
+$\mathbb{C}$ & complex numbers \\
+$\hat{x}$ & estimate \\
+$\tilde{x}$ & perturbation or error variable \\
+$\bar{x}$ & average or complex conjugate \\
+$x^{*}$ & optimum, adjoint, or conjugate depending on context \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For example,
+\[
+\hat{\vct{x}}
+\]
+often means an estimate of \(\vct{x}\), while
+\[
+\tilde{\vct{x}}
+=
+\vct{x}
+-
+\hat{\vct{x}}
+\]
+often means estimation error.
+
+\section{Brackets, Delimiters, and Grouping Symbols}
+
+Brackets are not only visual punctuation. They often carry mathematical
+meaning: grouping, intervals, matrices, sets, inner products, norms,
+commutators, and functionals.
+
+\subsection{Parentheses}
+
+Parentheses are used for grouping, function arguments, and tuples:
+\[
+(a+b)c,
+\qquad
+f(x),
+\qquad
+(x,y,z).
+\]
+
+They are also used for open intervals:
+\[
+(a,b)
+=
+\{x\in\R : a<x<b\}.
+\]
+
+In probability and statistics:
+\[
+X \sim \Normal(\mu,\sigma^2).
+\]
+
+\subsection{Square Brackets}
+
+Square brackets are used for grouping, indexing, expectations, and closed
+intervals:
+\[
+f[x],
+\qquad
+x[k],
+\qquad
+\E[X].
+\]
+
+A closed interval is
+\[
+[a,b]
+=
+\{x\in\R : a\le x\le b\}.
+\]
+
+In stochastic processes, square brackets may denote functionals or dependence
+on an entire path:
+\[
+J[u],
+\qquad
+\symscr{F}[x(t)].
+\]
+
+\subsection{Curly Braces}
+
+Curly braces are used for sets:
+\[
+A
+=
+\{x\in\R : x>0\}.
+\]
+
+They are also used for cases:
+\[
+f(x)
+=
+\begin{cases}
+0, & x<0,\\
+1, & x\ge 0.
+\end{cases}
+\]
+
+Curly braces are common in transforms:
+\[
+\mathcal{F}\{f(t)\},
+\qquad
+\mathcal{L}\{f(t)\}.
+\]
+
+\subsection{Angle Brackets}
+
+Angle brackets are often used for inner products:
+\[
+\inner{\vct{x}}{\vct{y}}
+=
+\vct{x}\T\vct{y}.
+\]
+
+In function spaces:
+\[
+\inner{f}{g}_{L^2}
+=
+\int_{\Omega} f(x)g(x)\,\dd x.
+\]
+
+They may also denote duality pairings:
+\[
+\langle \ell,u\rangle_{X^*,X}.
+\]
+
+In physics, angle brackets may denote averages:
+\[
+\langle X\rangle
+=
+\E[X].
+\]
+
+\subsection{Vertical Bars}
+
+Single vertical bars denote absolute value:
+\[
+\abs{x}.
+\]
+
+They can also denote determinant:
+\[
+\abs{\mat{A}}
+\quad
+\text{sometimes means}
+\quad
+\determinant(\mat{A}).
+\]
+
+To avoid ambiguity, write
+\[
+\determinant(\mat{A})
+\]
+when determinant is intended.
+
+Double vertical bars denote norms:
+\[
+\norm{\vct{x}},
+\qquad
+\norm{f}_{L^2}.
+\]
+
+A vertical bar can also mean ``such that'':
+\[
+\{x\in\R \mid x>0\}.
+\]
+
+In probability, the vertical bar means conditioning:
+\[
+p(x\mid y),
+\qquad
+\Prob(A\mid B).
+\]
+
+\subsection{Floor and Ceiling Brackets}
+
+Floor brackets round down:
+\[
+\lfloor x\rfloor.
+\]
+
+Ceiling brackets round up:
+\[
+\lceil x\rceil.
+\]
+
+For example,
+\[
+\lfloor 3.7\rfloor = 3,
+\qquad
+\lceil 3.7\rceil = 4.
+\]
+
+They are common in algorithms, indexing, and numerical methods:
+\[
+k = \left\lfloor \frac{t}{\Delta t} \right\rfloor.
+\]
+
+\subsection{Matrix and Vector Brackets}
+
+Column vectors are often written with square brackets:
+\[
+\vct{x}
+=
+\begin{bmatrix}
+x_1\\
+x_2\\
+x_3
+\end{bmatrix}.
+\]
+
+Matrices are also written with square brackets:
+\[
+\mat{A}
+=
+\begin{bmatrix}
+a_{11} & a_{12}\\
+a_{21} & a_{22}
+\end{bmatrix}.
+\]
+
+Parentheses are also used in some books:
+\[
+\mat{A}
+=
+\begin{pmatrix}
+a_{11} & a_{12}\\
+a_{21} & a_{22}
+\end{pmatrix}.
+\]
+
+Square brackets are common in engineering and numerical computing, while
+parentheses are common in pure mathematics.
+
+\subsection{Commutators and Special Brackets}
+
+In algebra, physics, and matrix theory, the commutator is
+\[
+[\mat{A},\mat{B}]
+=
+\mat{A}\mat{B}
+-
+\mat{B}\mat{A}.
+\]
+
+It measures how much two operations fail to commute.
+
+The anticommutator is
+\[
+\{\mat{A},\mat{B}\}
+=
+\mat{A}\mat{B}
++
+\mat{B}\mat{A}.
+\]
+
+In mechanics, Poisson brackets are written
+\[
+\{f,g\}.
+\]
+
+In Lie theory, one may see a Lie bracket:
+\[
+[X,Y].
+\]
+
+The meaning depends on context, so bracket notation should always be interpreted
+together with the surrounding field.
+
+\subsection{Automatic and Manual Bracket Sizing}
+
+LaTeX can size brackets automatically:
+\[
+\left(
+\frac{a+b}{c+d}
+\right).
+\]
+
+However, automatic sizing is not always visually ideal. Manual sizing commands
+are often cleaner:
+\[
+\bigl( x \bigr),
+\qquad
+\Bigl( x \Bigr),
+\qquad
+\biggl( x \biggr),
+\qquad
+\Biggl( x \Biggr).
+\]
+
+With the paired delimiter macros in the preamble, one can write
+\[
+\mparen*{\frac{a+b}{c+d}},
+\qquad
+\mbracks*{0,1},
+\qquad
+\mbraces*{x\in\R : x>0},
+\qquad
+\mabs*{x},
+\qquad
+\mnorm*{\vct{x}}.
+\]
+
+\subsection{Bracket Summary}
+
+\begin{table}[h]
+\centering
+\caption{Common bracket meanings.}
+\begin{tabular}{lll}
+\toprule
+Bracket & Example & Common meaning \\
+\midrule
+Parentheses & $(a,b)$ & grouping, tuple, open interval \\
+Square & $[a,b]$ & closed interval, indexing \\
+Curly & $\{x:x>0\}$ & set, cases, transform argument \\
+Angle & $\langle x,y\rangle$ & inner product, pairing, average \\
+Single bars & $\abs{x}$ & absolute value, determinant, conditioning \\
+Double bars & $\norm{x}$ & norm \\
+Floor & $\lfloor x\rfloor$ & round down \\
+Ceiling & $\lceil x\rceil$ & round up \\
+Commutator & $[A,B]$ & $AB-BA$ \\
+Anticommutator & $\{A,B\}$ & $AB+BA$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Numbers, Sets, and Spaces}
 
