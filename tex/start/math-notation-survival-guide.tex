@@ -2650,6 +2650,768 @@ materials, translated notes, or spoken presentation notes. In formulas, prefer
 language-neutral symbols and avoid language-specific subscripts unless the whole
 document is written in that language.
 
+\section{Geometrical Shape Symbols}
+
+Mathematical notation also uses small geometrical shapes as symbols. These
+shapes may represent operations, relations, markers, proof endings, topology,
+closed integrals, diagrams, logic, geometry, or graphical conventions.
+
+The meaning of a shape is not universal. A square, circle, dot, triangle, or
+arrow may mean different things in algebra, geometry, topology, probability,
+logic, signal processing, or numerical analysis.
+
+\subsection{Solid and Hollow Shapes}
+
+A common distinction is between hollow and filled shapes:
+\[
+\square,
+\qquad
+\blacksquare,
+\qquad
+\circ,
+\qquad
+\bullet,
+\qquad
+\triangle,
+\qquad
+\blacktriangle,
+\qquad
+\lozenge,
+\qquad
+\blacklozenge.
+\]
+
+Hollow shapes are often used as abstract operators or markers. Filled shapes
+are often used as stronger visual markers, graph nodes, bullet symbols, or end
+markers.
+
+\begin{table}[h]
+\centering
+\caption{Common hollow and solid shape symbols.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\square$ & square & modal logic, generic box operator, proof marker \\
+$\blacksquare$ & black square & end of proof \\
+$\circ$ & small circle & composition, open point, circle operation \\
+$\bullet$ & bullet & dot product variant, graph node, marker \\
+$\triangle$ & triangle & geometry, symmetric difference, generic triangle \\
+$\blacktriangle$ & black triangle & marker, ordering relation, graph symbol \\
+$\diamond$ & diamond & modal logic, generic diamond operator \\
+$\lozenge$ & lozenge & diamond-like relation or marker \\
+$\star$ & star & convolution-like operation, special product \\
+$\ast$ & asterisk & multiplication-like operation, adjoint marker \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For example, the filled square is commonly used to mark the end of a proof:
+\[
+\text{Therefore the claim follows.}
+\qquad
+\blacksquare
+\]
+
+\subsection{Squares and Boxes}
+
+Squares and boxes appear in several areas.
+
+In logic, especially modal logic, a box may mean ``necessarily'':
+\[
+\square P.
+\]
+
+A diamond may mean ``possibly'':
+\[
+\diamond P.
+\]
+
+Together:
+\[
+\square P
+\quad
+\text{means necessarily } P,
+\qquad
+\diamond P
+\quad
+\text{means possibly } P.
+\]
+
+In proofs, a square marks completion:
+\[
+\blacksquare
+\qquad
+\text{or}
+\qquad
+\square.
+\]
+
+In diagrams and algorithms, squares may simply be node shapes:
+\[
+\boxed{x_{k+1} = f(x_k)}
+\]
+emphasizes an important equation.
+
+\subsection{Circles and Dots}
+
+Circles and dots are extremely common.
+
+The small circle often denotes function composition:
+\[
+(f \circ g)(x)
+=
+f(g(x)).
+\]
+
+A circle can also denote a special binary operation:
+\[
+a \circ b.
+\]
+
+The centered dot is often multiplication:
+\[
+a \cdot b.
+\]
+
+For vectors, it denotes the dot product:
+\[
+\vct{a}\cdot\vct{b}.
+\]
+
+A bullet may be used as a placeholder argument:
+\[
+f(\bullet)
+\]
+or as a generic marked point in diagrams.
+
+Different dots have different meanings:
+\[
+\cdot,
+\qquad
+\bullet,
+\qquad
+\ldots,
+\qquad
+\cdots,
+\qquad
+\vdots,
+\qquad
+\ddots.
+\]
+
+\begin{table}[h]
+\centering
+\caption{Dot symbols and their common meanings.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\cdot$ & centered dot & multiplication, dot product \\
+$\bullet$ & bullet & marker, graph node, placeholder \\
+$\ldots$ & low dots & continuation in text or lists \\
+$\cdots$ & centered dots & continuation in sums/products \\
+$\vdots$ & vertical dots & vertical continuation \\
+$\ddots$ & diagonal dots & diagonal continuation in matrices \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Example matrix notation:
+\[
+\mat{A}
+=
+\begin{bmatrix}
+a_{11} & a_{12} & \cdots & a_{1n}\\
+a_{21} & a_{22} & \cdots & a_{2n}\\
+\vdots & \vdots & \ddots & \vdots\\
+a_{m1} & a_{m2} & \cdots & a_{mn}
+\end{bmatrix}.
+\]
+
+\subsection{Triangles}
+
+Triangles are used in geometry, calculus, finite differences, and set theory.
+
+A triangle may simply denote a geometric triangle:
+\[
+\triangle ABC.
+\]
+
+The symbol \(\Delta\) often means change:
+\[
+\Delta x = x_{k+1}-x_k.
+\]
+
+It can also denote the Laplacian:
+\[
+\Delta f
+=
+\nabla\cdot\nabla f.
+\]
+
+The upside-down triangle, or nabla, is a differential operator:
+\[
+\nabla f,
+\qquad
+\nabla\cdot\vct{u},
+\qquad
+\nabla\times\vct{u}.
+\]
+
+In set theory, triangle notation can denote symmetric difference:
+\[
+A \triangle B
+=
+(A\setminus B)\cup(B\setminus A).
+\]
+
+\begin{table}[h]
+\centering
+\caption{Triangle-related notation.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\triangle ABC$ & triangle & geometric triangle with vertices \(A,B,C\) \\
+$\Delta x$ & delta & finite change or increment \\
+$\Delta f$ & Delta operator & Laplacian in PDEs \\
+$\nabla f$ & nabla / del & gradient \\
+$A\triangle B$ & symmetric difference & elements in one set but not both \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Crosses, Plus Signs, and Perpendicular Symbols}
+
+The cross symbol can mean multiplication:
+\[
+a\times b.
+\]
+
+For vectors in three dimensions, it means cross product:
+\[
+\vct{a}\times\vct{b}.
+\]
+
+A plus sign may mean ordinary addition:
+\[
+a+b.
+\]
+
+A circled plus may mean a direct sum:
+\[
+V \oplus W.
+\]
+
+A circled times may mean a tensor product or special product:
+\[
+V \otimes W.
+\]
+
+The perpendicular symbol means orthogonality:
+\[
+\vct{u}\perp\vct{v}.
+\]
+
+For subspaces:
+\[
+U^\perp
+=
+\{\vct{x}:\inner{\vct{x}}{\vct{u}}=0
+\text{ for all } \vct{u}\in U\}.
+\]
+
+In geometry:
+\[
+AB \perp CD
+\]
+means line segment \(AB\) is perpendicular to line segment \(CD\).
+
+\begin{table}[h]
+\centering
+\caption{Cross and perpendicular symbols.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\times$ & times / cross & multiplication, cross product \\
+$\oplus$ & circled plus & direct sum \\
+$\otimes$ & circled times & tensor product, Kronecker product \\
+$\perp$ & perpendicular & orthogonal vectors, perpendicular lines \\
+$U^\perp$ & orthogonal complement & vectors perpendicular to subspace \(U\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Angles}
+
+Angle symbols are used in geometry, trigonometry, complex numbers, and vector
+analysis.
+
+The basic angle symbol is
+\[
+\angle ABC.
+\]
+
+This denotes the angle with vertex \(B\), formed by points \(A,B,C\).
+
+A measured angle may be written
+\[
+\measuredangle ABC.
+\]
+
+A right angle is often shown by a square-corner symbol:
+\[
+\perp
+\]
+or by a right-angle marker in a diagram.
+
+Common angle notation:
+\[
+\theta,
+\qquad
+\phi,
+\qquad
+\alpha,
+\qquad
+\beta.
+\]
+
+For complex numbers:
+\[
+z = r e^{\ii\theta}.
+\]
+
+The angle, or argument, of a complex number is
+\[
+\arg z = \theta.
+\]
+
+In vector algebra:
+\[
+\vct{a}\cdot\vct{b}
+=
+\norm{\vct{a}}\norm{\vct{b}}\cos\theta.
+\]
+
+\begin{table}[h]
+\centering
+\caption{Angle-related notation.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\angle ABC$ & angle & geometric angle with vertex \(B\) \\
+$\measuredangle ABC$ & measured angle & explicitly measured angle \\
+$\theta,\phi$ & angle variables & trigonometry, phase, rotation \\
+$\arg z$ & argument & angle of a complex number \\
+$\perp$ & right angle / perpendicular & orthogonality \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Stars and Asterisks}
+
+Stars and asterisks have several meanings.
+
+A small asterisk may denote a special binary operation:
+\[
+a \ast b.
+\]
+
+A star may denote convolution:
+\[
+(f \ast g)(t)
+=
+\int_{-\infty}^{\infty}
+f(\tau)g(t-\tau)\,\dd\tau.
+\]
+
+A superscript star may mean optimum:
+\[
+x^*
+=
+\arg\min_x f(x).
+\]
+
+In complex analysis, physics, or linear algebra, star may mean conjugate,
+adjoint, or dual:
+\[
+z^*,
+\qquad
+\mat{A}^*,
+\qquad
+X^*.
+\]
+
+The meaning depends heavily on context. For this reason, papers should define
+what \(^*\) means.
+
+\begin{table}[h]
+\centering
+\caption{Star notation.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\ast$ & asterisk operator & convolution or custom product \\
+$\star$ & star operator & custom operation, marker \\
+$x^*$ & star superscript & optimum, conjugate, dual, adjoint \\
+$\mat{A}^*$ & matrix star & adjoint or conjugate transpose \\
+$X^*$ & dual space & continuous linear functionals on \(X\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Arrows}
+
+Arrows are among the most important symbolic shapes in mathematics.
+
+A right arrow often means mapping, implication, or convergence:
+\[
+x \to a,
+\qquad
+f:X\to Y,
+\qquad
+P\Rightarrow Q.
+\]
+
+A left arrow is used for reverse implication or assignment-like notation:
+\[
+Q \Leftarrow P.
+\]
+
+A double arrow means equivalence:
+\[
+P \Leftrightarrow Q.
+\]
+
+A map arrow shows how individual elements are sent:
+\[
+x \mapsto f(x).
+\]
+
+A bidirectional arrow may mean correspondence:
+\[
+A \leftrightarrow B.
+\]
+
+Long arrows are useful in diagrams:
+\[
+X \longrightarrow Y \longrightarrow Z.
+\]
+
+Vector arrows are sometimes used instead of bold notation:
+\[
+\vec{x}.
+\]
+
+In this document, bold notation is preferred:
+\[
+\vct{x}.
+\]
+
+\begin{table}[h]
+\centering
+\caption{Common arrow symbols.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\to$ & right arrow & limit, function type, tends to \\
+$\leftarrow$ & left arrow & reverse direction \\
+$\leftrightarrow$ & two-way arrow & correspondence \\
+$\mapsto$ & maps to & element mapping \\
+$\Rightarrow$ & double right arrow & implication \\
+$\Leftarrow$ & double left arrow & reverse implication \\
+$\Leftrightarrow$ & double two-way arrow & if and only if \\
+$\longrightarrow$ & long arrow & diagrams, transformations \\
+$\uparrow,\downarrow$ & vertical arrows & increase/decrease, direction \\
+$\nearrow,\searrow$ & diagonal arrows & monotone trends, directions \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Examples:
+\[
+x\to a
+\]
+means \(x\) approaches \(a\).
+
+\[
+f:X\to Y
+\]
+means \(f\) maps elements of \(X\) into \(Y\).
+
+\[
+x\mapsto x^2
+\]
+means \(x\) is sent to \(x^2\).
+
+\[
+P\Rightarrow Q
+\]
+means \(P\) implies \(Q\).
+
+\subsection{Wavy Lines and Approximation Symbols}
+
+Wavy symbols usually indicate similarity, approximation, proportionality, or
+asymptotic equivalence.
+
+\[
+a \sim b
+\]
+can mean \(a\) is asymptotic to \(b\), or that \(a\) is distributed as \(b\),
+depending on context.
+
+In statistics:
+\[
+X \sim \Normal(\mu,\sigma^2)
+\]
+means \(X\) has a normal distribution.
+
+Approximation is often written
+\[
+a \approx b.
+\]
+
+Similarity may be written
+\[
+\mat{A} \sim \mat{B}.
+\]
+
+Proportionality is written
+\[
+y \propto x.
+\]
+
+Asymptotic equivalence is written
+\[
+f(x) \sim g(x)
+\qquad
+\text{as}
+\qquad
+x\to\infty.
+\]
+
+\begin{table}[h]
+\centering
+\caption{Wavy and approximation symbols.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\sim$ & similar / asymptotic / distributed as & context-dependent \\
+$\simeq$ & similar or approximately equal & approximation/equivalence \\
+$\approx$ & approximately equal & numerical approximation \\
+$\cong$ & congruent / isomorphic & geometry, algebra \\
+$\propto$ & proportional to & scaling relation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Dotted and Dashed Lines}
+
+Dotted and dashed lines are mostly graphical conventions rather than algebraic
+symbols. They appear in plots, diagrams, geometry figures, state machines, and
+commutative diagrams.
+
+Common meanings include:
+\[
+\text{dotted line} \quad \longrightarrow \quad
+\text{optional, hidden, weak, or reference relation},
+\]
+\[
+\text{dashed line} \quad \longrightarrow \quad
+\text{constraint, boundary, approximation, or missing edge}.
+\]
+
+In graphs or geometry, a solid line may represent an actual edge:
+\[
+A \longrightarrow B.
+\]
+
+A dashed or dotted line may represent an inferred, virtual, or auxiliary
+connection:
+\[
+A \dashrightarrow B.
+\]
+
+In plots, line style usually distinguishes data series:
+\[
+\text{solid: measured},
+\qquad
+\text{dashed: model},
+\qquad
+\text{dotted: reference}.
+\]
+
+Exact meaning should always be explained in the figure caption or legend.
+
+\subsection{Closed Integrals: Circles over Integral Signs}
+
+A circle on an integral sign indicates integration over a closed curve,
+closed surface, or closed boundary.
+
+A closed line integral is written
+\[
+\oint_C \vct{F}\cdot \dd\vct{r}.
+\]
+
+This usually means that \(C\) is a closed curve.
+
+A closed surface integral is often written
+\[
+\oiint_{\partial\Omega}
+\vct{F}\cdot\vct{n}\,\dd S.
+\]
+
+This means integration over a closed surface, usually the boundary
+\(\partial\Omega\) of a volume \(\Omega\).
+
+A closed volume-style integral may be written
+\[
+\oiiint_{\partial V}
+f\,\dd V,
+\]
+although this notation is less common than \(\oint\) and \(\oiint\).
+
+The most common practical uses are:
+\[
+\oint_C
+\quad
+\text{closed curve integral},
+\]
+\[
+\oiint_{\partial\Omega}
+\quad
+\text{closed surface integral}.
+\]
+
+For example, the divergence theorem may be written
+\[
+\oiint_{\partial\Omega}
+\vct{F}\cdot\vct{n}\,\dd S
+=
+\iiint_{\Omega}
+\nabla\cdot\vct{F}\,\dd V.
+\]
+
+The circle emphasizes that the surface \(\partial\Omega\) is closed.
+
+\subsection{Brackets for Intervals}
+
+Intervals use different brackets depending on whether endpoints are included.
+
+An open interval excludes both endpoints:
+\[
+(a,b)
+=
+\{x\in\R : a<x<b\}.
+\]
+
+A closed interval includes both endpoints:
+\[
+[a,b]
+=
+\{x\in\R : a\le x\le b\}.
+\]
+
+A half-open interval includes one endpoint and excludes the other:
+\[
+[a,b)
+=
+\{x\in\R : a\le x<b\},
+\]
+\[
+(a,b]
+=
+\{x\in\R : a<x\le b\}.
+\]
+
+Infinite intervals use parentheses next to infinity because infinity is not an
+endpoint that can be included:
+\[
+(a,\infty),
+\qquad
+(-\infty,b],
+\qquad
+(-\infty,\infty)=\R.
+\]
+
+\begin{table}[h]
+\centering
+\caption{Interval bracket notation.}
+\begin{tabular}{lll}
+\toprule
+Interval & Meaning & Endpoint rule \\
+\midrule
+$(a,b)$ & \(a<x<b\) & excludes both endpoints \\
+$[a,b]$ & \(a\le x\le b\) & includes both endpoints \\
+$[a,b)$ & \(a\le x<b\) & includes left endpoint only \\
+$(a,b]$ & \(a<x\le b\) & includes right endpoint only \\
+$(a,\infty)$ & \(x>a\) & infinity is not included \\
+$(-\infty,b]$ & \(x\le b\) & includes \(b\), not infinity \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Some European texts use reversed brackets for open intervals:
+\[
+]a,b[
+\]
+instead of
+\[
+(a,b).
+\]
+
+Similarly,
+\[
+[a,b[
+\]
+may mean
+\[
+[a,b).
+\]
+
+In international English-language mathematical writing, the most common
+notation is
+\[
+(a,b),
+\qquad
+[a,b],
+\qquad
+[a,b),
+\qquad
+(a,b].
+\]
+
+\subsection{Shape Symbol Summary}
+
+\begin{table*}[t]
+\centering
+\caption{Summary of geometrical shape symbols.}
+\begin{tabular}{lll}
+\toprule
+Shape family & Examples & Common meanings \\
+\midrule
+Squares & $\square,\blacksquare,\boxed{x}$ & modal logic, proof end, emphasized expressions \\
+Circles & $\circ,\bullet,\cdot$ & composition, operation, dot product, markers \\
+Diamonds & $\diamond,\lozenge$ & modal logic, relation, marker \\
+Triangles & $\triangle,\Delta,\nabla$ & geometry, change, Laplacian, gradient operator \\
+Crosses & $\times,\oplus,\otimes$ & product, direct sum, tensor product \\
+Perpendicular & $\perp,U^\perp$ & orthogonality, perpendicular lines, complements \\
+Angles & $\angle ABC,\theta,\arg z$ & geometric angle, phase, complex argument \\
+Stars & $\ast,\star,x^*$ & convolution, custom product, optimum, adjoint \\
+Arrows & $\to,\mapsto,\Rightarrow,\Leftrightarrow$ & maps, limits, implication, equivalence \\
+Wavy symbols & $\sim,\approx,\simeq,\propto$ & similarity, approximation, proportionality \\
+Closed integrals & $\oint,\oiint,\oiiint$ & closed curve/surface/boundary integrals \\
+Intervals & $(a,b),[a,b],[a,b),(a,b]$ & endpoint inclusion/exclusion \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 \section{Conclusion}
 
 Mathematical notation is a compact way to express relationships between
