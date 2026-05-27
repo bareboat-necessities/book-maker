@@ -9,6 +9,13 @@
 \setlength{\columnsep}{0.25in}
 
 % ------------------------------------------------------------
+% Core math
+% Load amsmath/mathtools before unicode-math.
+% ------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+% ------------------------------------------------------------
 % Fonts: LuaLaTeX or XeLaTeX
 % ------------------------------------------------------------
 \usepackage{fontspec}
@@ -19,19 +26,15 @@
 \setmonofont{DejaVu Sans Mono}
 \setmathfont{Latin Modern Math}
 
-% ------------------------------------------------------------
-% Core math
-% ------------------------------------------------------------
-\usepackage{amsmath}
-% Do NOT load amssymb or amsfonts with unicode-math.
-% \usepackage{amssymb}  % conflicts with unicode-math: \eth already defined
-% \usepackage{amsfonts} % unnecessary with unicode-math
+% Do NOT load amssymb, amsfonts, or bm with unicode-math.
+% amssymb/amfonts can conflict with symbols such as \eth.
+% bm can break Greek bold symbols under unicode-math.
 
-\usepackage{mathtools}
-\usepackage{bm}
+% ------------------------------------------------------------
+% Extra math utilities
+% ------------------------------------------------------------
 \usepackage{tensor}
 \usepackage{cancel}
-\usepackage{mathrsfs}
 
 % ------------------------------------------------------------
 % Tables
@@ -59,7 +62,6 @@
 
 \pgfplotsset{compat=1.18}
 
-% Optional PGF libraries
 \usetikzlibrary{
   arrows.meta,
   calc,
@@ -94,10 +96,9 @@
 
 % Scalars, vectors, matrices, tensors
 \newcommand{\scal}[1]{#1}
-% unicode-math-native bold notation
-\newcommand{\vct}[1]{\symbfit{#1}}   % bold italic vector, works for Greek too
+\newcommand{\vct}[1]{\symbfit{#1}}   % bold italic vector, works for Greek
 \newcommand{\mat}[1]{\symbf{#1}}     % bold upright matrix
-\newcommand{\ten}[1]{\symbfsf{#1}}   % bold san
+\newcommand{\ten}[1]{\symbfsf{#1}}   % bold sans-serif tensor
 
 % Unit vectors
 \newcommand{\ihat}{\hat{\vct{i}}}
@@ -112,6 +113,7 @@
 \newcommand{\rank}{\operatorname{rank}}
 \newcommand{\nullspace}{\operatorname{null}}
 \newcommand{\range}{\operatorname{range}}
+\newcommand{\determinant}{\operatorname{det}}
 
 % Norms, inner products
 \newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
@@ -123,7 +125,7 @@
 \newcommand{\pd}{\partial}
 \newcommand{\grad}{\nabla}
 \newcommand{\divg}{\nabla \cdot}
-\newcommand{\curl}{\nabla \times}
+\newcommand{\curlop}{\nabla \times}
 \newcommand{\rot}{\nabla \times}
 \newcommand{\laplace}{\Delta}
 
@@ -220,7 +222,7 @@ A gradient, divergence, curl, and Laplacian are written as
 \qquad
 \divg \vct{u},
 \qquad
-\curl \vct{u},
+\curlop \vct{u},
 \qquad
 \laplace f.
 \]
@@ -362,8 +364,8 @@ k_2 = f\left(t_n+\frac{h}{2}, y_n+\frac{h}{2}k_1\right).
 \toprule
 Method & Error & Runtime \\
 \midrule
-Euler & \num{1.2e-2} & \SI{0.3}{ms} \\
-RK4   & \num{2.1e-5} & \SI{1.4}{ms} \\
+Euler & \num{1.2e-2} & \qty{0.3}{ms} \\
+RK4   & \num{2.1e-5} & \qty{1.4}{ms} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -392,13 +394,19 @@ RK4   & \num{2.1e-5} & \SI{1.4}{ms} \\
 
 \section{SVG Graphics}
 
-Place an SVG file in the same folder, for example \texttt{device.svg}, then use:
+Place an SVG file in the same folder, for example \texttt{device.svg}.
+The example below is guarded, so the document still builds when the file is
+missing.
 
 \begin{figure}[h]
 \centering
-% Requires: latexmk -lualatex -shell-escape main.tex
-% Requires Inkscape installed.
-\includesvg[width=0.8\columnwidth]{device}
+% Requires: latexmk -lualatex -shell-escape basics.tex
+% Requires Inkscape installed if the SVG actually exists.
+\IfFileExists{device.svg}{%
+  \includesvg[width=0.8\columnwidth]{device}%
+}{%
+  \fbox{\parbox{0.75\columnwidth}{\centering SVG placeholder\\\texttt{device.svg} not found}}%
+}
 \caption{Example SVG graphic.}
 \end{figure}
 
