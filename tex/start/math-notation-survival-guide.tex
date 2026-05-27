@@ -95,6 +95,20 @@
 \newcommand{\safeangle}{\angle}
 \newcommand{\safemeasuredangle}{\angle_{\mathrm{meas}}}
 
+% ============================================================
+% Safe dashed arrow symbol
+% ============================================================
+% Avoid relying on amssymb/stmaryrd just for \dashrightarrow.
+
+\newcommand{\safedashrightarrow}{%
+  \mathrel{%
+    \tikz[baseline=-0.55ex]{
+      \draw[dashed, -{Latex[length=0.9ex,width=0.8ex]}, line width=0.07em]
+        (0,0) -- (1.45em,0);
+    }%
+  }%
+}
+
 \usepackage{pgfplots}
 \usepackage{stfloats}
 
@@ -3308,7 +3322,7 @@ A \longrightarrow B.
 A dashed or dotted line may represent an inferred, virtual, or auxiliary
 connection:
 \[
-A \dashrightarrow B.
+A \safedashrightarrow B.
 \]
 
 In plots, line style usually distinguishes data series:
