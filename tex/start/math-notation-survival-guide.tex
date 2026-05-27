@@ -2146,6 +2146,304 @@ v_{\text{ср}},
 For best compatibility, Cyrillic annotations should usually be placed inside
 \verb|\text{...}| rather than treated as ordinary math variables.
 
+\subsection{Hebrew Letters in Mathematical Notation}
+
+Hebrew letters are rare in general mathematical notation, but a few symbols are
+standard in set theory, logic, and mathematical foundations.
+
+The most common Hebrew letter in mathematics is aleph:
+\[
+\aleph.
+\]
+
+It is used for infinite cardinal numbers:
+\[
+\aleph_0,
+\qquad
+\aleph_1,
+\qquad
+\aleph_2,
+\qquad
+\ldots
+\]
+
+The symbol \(\aleph_0\), read ``aleph-null'' or ``aleph-zero,'' denotes the
+cardinality of the natural numbers:
+\[
+|\N| = \aleph_0.
+\]
+
+This is the size of any countably infinite set:
+\[
+|\N| = |\Z| = |\Q| = \aleph_0.
+\]
+
+Other Hebrew-derived symbols sometimes appear in set theory:
+\[
+\beth,
+\qquad
+\gimel,
+\qquad
+\daleth.
+\]
+
+The beth numbers are used to describe cardinalities obtained by repeated
+power-set operations:
+\[
+\beth_0 = \aleph_0,
+\qquad
+\beth_{n+1} = 2^{\beth_n}.
+\]
+
+For example,
+\[
+\beth_1 = 2^{\aleph_0}
+\]
+is the cardinality of the continuum, that is, the size of the real numbers:
+\[
+|\R| = 2^{\aleph_0}.
+\]
+
+Hebrew letters are therefore mostly used in:
+\[
+\text{set theory},
+\qquad
+\text{cardinal arithmetic},
+\qquad
+\text{logic},
+\qquad
+\text{foundations of mathematics}.
+\]
+
+They are not commonly used for ordinary variables in calculus, linear algebra,
+probability, or numerical methods.
+
+\begin{table}[h]
+\centering
+\caption{Common Hebrew symbols in mathematics.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Common use \\
+\midrule
+$\aleph$ & aleph & infinite cardinals \\
+$\aleph_0$ & aleph-null & cardinality of countable infinity \\
+$\beth$ & beth & beth numbers, power-set cardinalities \\
+$\gimel$ & gimel & specialized set-theoretic notation \\
+$\daleth$ & daleth & rare set-theoretic notation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Special Mathematical Alphabets}
+
+Mathematics uses special alphabets to make different kinds of objects visually
+distinct. These styles are conventions, not laws. Their meaning depends on the
+field and the paper, but several patterns are very common.
+
+\subsection{Calligraphic Letters}
+
+Calligraphic letters are often used for operators, transforms, spaces, families,
+and collections:
+\[
+\mathcal{A},
+\qquad
+\mathcal{B},
+\qquad
+\mathcal{F},
+\qquad
+\mathcal{L},
+\qquad
+\mathcal{P}.
+\]
+
+Common examples include:
+\[
+\mathcal{F}\{f(t)\}
+\]
+for a Fourier transform, and
+\[
+\mathcal{L}u = f
+\]
+for a differential operator acting on \(u\).
+
+A family of sets may also be written as
+\[
+\mathcal{A}
+=
+\{A_i : i \in I\}.
+\]
+
+In probability, one often writes
+\[
+\mathcal{F}
+\]
+for a sigma-algebra, meaning a collection of events.
+
+\subsection{Script Letters}
+
+Script letters are visually similar to calligraphic letters, but with a more
+handwritten appearance:
+\[
+\symscr{A},
+\qquad
+\symscr{F},
+\qquad
+\symscr{J},
+\qquad
+\symscr{L}.
+\]
+
+They are often used for functionals, special families, or abstract objects.
+For example, an energy functional may be written as
+\[
+\symscr{J}[u]
+=
+\int_{\Omega}
+\left(
+\frac{1}{2}\abs{\grad u}^{2}
+-
+fu
+\right)\dd x.
+\]
+
+Here \(\symscr{J}\) is not an ordinary function of a number. It is a functional:
+it takes a function \(u\) as input and returns a scalar.
+
+\subsection{Fraktur Letters}
+
+Fraktur letters are often used in algebra, geometry, and Lie theory:
+\[
+\symfrak{g},
+\qquad
+\symfrak{h},
+\qquad
+\symfrak{sl},
+\qquad
+\symfrak{so}.
+\]
+
+A common convention is to use Fraktur letters for Lie algebras:
+\[
+\symfrak{g}
+\]
+while the corresponding Lie group may be written with ordinary or roman letters:
+\[
+G.
+\]
+
+For example,
+\[
+SO(3)
+\]
+is the group of three-dimensional rotations, while its Lie algebra is often
+written
+\[
+\symfrak{so}(3).
+\]
+
+Fraktur letters may also be used for ideals in algebra:
+\[
+\symfrak{a},
+\qquad
+\symfrak{p},
+\qquad
+\symfrak{m}.
+\]
+
+For example, in commutative algebra, \(\symfrak{p}\) often denotes a prime
+ideal and \(\symfrak{m}\) often denotes a maximal ideal.
+
+\subsection{Blackboard-Bold or Hollow Letters}
+
+Blackboard-bold letters are most commonly used for standard number systems:
+\[
+\mathbb{N},
+\qquad
+\mathbb{Z},
+\qquad
+\mathbb{Q},
+\qquad
+\mathbb{R},
+\qquad
+\mathbb{C}.
+\]
+
+They may also denote probability and expectation:
+\[
+\mathbb{P}(A),
+\qquad
+\mathbb{E}[X].
+\]
+
+Common examples:
+\[
+x \in \mathbb{R},
+\qquad
+z \in \mathbb{C},
+\qquad
+\mathbb{P}(X>x).
+\]
+
+Some books use blackboard-bold for special spaces:
+\[
+\mathbb{S}^{2}
+\]
+for the two-dimensional sphere, or
+\[
+\mathbb{T}
+\]
+for a torus.
+
+\subsection{Sans-Serif and Upright Letters}
+
+Sans-serif letters are sometimes used for groups, categories, labels, or
+special tensor notation:
+\[
+\mathsf{SO}(3),
+\qquad
+\mathsf{SE}(3),
+\qquad
+\mathsf{T}.
+\]
+
+Upright roman letters are used for named functions and operators:
+\[
+\sin x,
+\qquad
+\cos x,
+\qquad
+\log x,
+\qquad
+\exp x,
+\qquad
+\det(\mat{A}).
+\]
+
+This distinguishes named functions from products of variables. For example,
+\[
+\sin x
+\]
+means the sine of \(x\), not the product \(s i n x\).
+
+\subsection{Summary of Special Alphabets}
+
+\begin{table}[h]
+\centering
+\caption{Special mathematical alphabets.}
+\begin{tabular}{lll}
+\toprule
+Style & Example & Common use \\
+\midrule
+Calligraphic & $\mathcal{L}$ & operators, transforms, families \\
+Script & $\symscr{J}$ & functionals, special families \\
+Fraktur & $\symfrak{g}$ & Lie algebras, ideals \\
+Blackboard bold & $\mathbb{R}$ & number systems, probability \\
+Sans serif & $\mathsf{SO}(3)$ & groups, labels, tensor styles \\
+Upright roman & $\sin,\log,\det$ & named functions and operators \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Conclusion}
 
 Mathematical notation is a compact way to express relationships between
