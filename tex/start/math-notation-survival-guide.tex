@@ -56,39 +56,44 @@
 \usepackage{graphicx}
 \usepackage{svg}
 \usepackage{tikz}
+
 % ------------------------------------------------------------
 % Safe geometric shape symbols for unicode-math setup
 % Avoid loading amssymb just to get \square / \blacksquare.
+% Do not use \renewcommand{\square}; \square may not exist.
 % ------------------------------------------------------------
-\renewcommand{\square}{%
+
+\newcommand{\safesquare}{%
   \mathord{\vcenter{\hbox{\tikz[baseline=-0.5ex]\draw[line width=0.08em] (0,0) rectangle (0.62em,0.62em);}}}%
 }
 
-\newcommand{\filledsquare}{%
+\newcommand{\safeblacksquare}{%
   \mathord{\vcenter{\hbox{\tikz[baseline=-0.5ex]\fill (0,0) rectangle (0.62em,0.62em);}}}%
 }
 
-\newcommand{\filledtriangle}{%
+\newcommand{\safeblacktriangle}{%
   \mathord{\vcenter{\hbox{\tikz[baseline=-0.5ex]\fill (0,0) -- (0.68em,0) -- (0.34em,0.62em) -- cycle;}}}%
 }
 
-\newcommand{\hollowlozenge}{%
+\newcommand{\safediamond}{%
   \mathord{\vcenter{\hbox{\tikz[baseline=-0.5ex]\draw[line width=0.08em] (0.34em,0) -- (0.68em,0.34em) -- (0.34em,0.68em) -- (0,0.34em) -- cycle;}}}%
 }
 
-\newcommand{\filledlozenge}{%
+\newcommand{\safeblackdiamond}{%
   \mathord{\vcenter{\hbox{\tikz[baseline=-0.5ex]\fill (0.34em,0) -- (0.68em,0.34em) -- (0.34em,0.68em) -- (0,0.34em) -- cycle;}}}%
 }
 
-% If \blacksquare exists, leave it alone; otherwise define it.
-\providecommand{\blacksquare}{\filledsquare}
+% Backward-compatible aliases if your section already uses these names.
+\newcommand{\filledsquare}{\safeblacksquare}
+\newcommand{\filledtriangle}{\safeblacktriangle}
+\newcommand{\hollowlozenge}{\safediamond}
+\newcommand{\filledlozenge}{\safeblackdiamond}
 
-% If these names are unavailable or mapped badly by the font, use safe aliases.
-\newcommand{\safesquare}{\square}
-\newcommand{\safeblacksquare}{\filledsquare}
-\newcommand{\safeblacktriangle}{\filledtriangle}
-\newcommand{\safelozenge}{\hollowlozenge}
-\newcommand{\safeblacklozenge}{\filledlozenge}
+\newcommand{\safelozenge}{\safediamond}
+\newcommand{\safeblacklozenge}{\safeblackdiamond}
+
+\newcommand{\safeangle}{\angle}
+\newcommand{\safemeasuredangle}{\angle_{\mathrm{meas}}}
 
 \usepackage{pgfplots}
 \usepackage{stfloats}
