@@ -94,9 +94,10 @@
 
 % Scalars, vectors, matrices, tensors
 \newcommand{\scal}[1]{#1}
-\newcommand{\vct}[1]{\bm{#1}}
-\newcommand{\mat}[1]{\bm{#1}}
-\newcommand{\ten}[1]{\bm{\mathsf{#1}}}
+% unicode-math-native bold notation
+\newcommand{\vct}[1]{\symbfit{#1}}   % bold italic vector, works for Greek too
+\newcommand{\mat}[1]{\symbf{#1}}     % bold upright matrix
+\newcommand{\ten}[1]{\symbfsf{#1}}   % bold san
 
 % Unit vectors
 \newcommand{\ihat}{\hat{\vct{i}}}
