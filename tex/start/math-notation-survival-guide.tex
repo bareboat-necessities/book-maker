@@ -34,6 +34,12 @@
 % ============================================================
 \usepackage{tensor}
 \usepackage{cancel}
+% ------------------------------------------------------------
+% Safe Feynman slash notation
+% ------------------------------------------------------------
+% Prefer the slashed package if available, but keep a fallback.
+% Since this document already loads cancel, the fallback always works.
+\providecommand{\slashed}[1]{\cancel{#1}}
 
 % ============================================================
 % Tables
