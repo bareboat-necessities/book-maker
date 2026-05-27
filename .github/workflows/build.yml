@@ -1,0 +1,134 @@
+name: build-tex
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-tex-pdfs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install LaTeX dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            latexmk \
+            texlive-luatex \
+            texlive-xetex \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-pictures \
+            texlive-science \
+            texlive-plain-generic \
+            fonts-dejavu-core \
+            fonts-dejavu-extra \
+            dvipng \
+            ghostscript \
+            inkscape \
+            graphviz \
+            openjdk-17-jre-headless \
+            curl
+
+      - name: Install PlantUML support
+        shell: bash
+        run: |
+          curl -L https://github.com/plantuml/plantuml/releases/download/v1.2025.4/plantuml.jar -o plantuml.jar
+          echo "PLANTUML_JAR=${{ github.workspace }}/plantuml.jar" >> "$GITHUB_ENV"
+
+      - name: Patch TeX openout permissions
+        shell: bash
+        run: |
+          TEXMF_CNF="$(kpsewhich texmf.cnf)"
+          echo "openout_any = a" | sudo tee -a "$TEXMF_CNF"
+
+      - name: Build all LaTeX PDFs recursively
+        shell: bash
+        env:
+          PLANTUML_JAR: ${{ github.workspace }}/plantuml.jar
+        run: |
+          set -euo pipefail
+
+          if [ ! -d tex ]; then
+            echo "Directory tex/ does not exist."
+            exit 1
+          fi
+
+          mkdir -p pdf-artifacts
+
+          found=0
+          built=0
+          failed=0
+
+          while IFS= read -r -d '' texfile; do
+            found=$((found + 1))
+
+            # Skip included fragments. Only standalone TeX files can build PDFs.
+            if ! grep -q '\\documentclass' "$texfile"; then
+              echo "Skipping non-root fragment: $texfile"
+              continue
+            fi
+
+            rel="${texfile#tex/}"
+            rel_dir="$(dirname "$rel")"
+            file_name="$(basename "$texfile")"
+            base_name="${file_name%.tex}"
+            work_dir="$(dirname "$texfile")"
+
+            echo "============================================"
+            echo "Building: $texfile"
+            echo "Work dir: $work_dir"
+            echo "Base:     $base_name"
+            echo "============================================"
+
+            (
+              cd "$work_dir"
+
+              latexmk \
+                -lualatex \
+                -shell-escape \
+                -interaction=nonstopmode \
+                -halt-on-error \
+                -file-line-error \
+                "$file_name"
+            ) || {
+              echo "FAILED: $texfile"
+              failed=$((failed + 1))
+              continue
+            }
+
+            mkdir -p "pdf-artifacts/$rel_dir"
+            cp -v "$work_dir/$base_name.pdf" "pdf-artifacts/$rel_dir/$base_name.pdf"
+            built=$((built + 1))
+
+          done < <(find tex -type f -name '*.tex' -print0 | sort -z)
+
+          echo "Found .tex files: $found"
+          echo "Built PDFs:        $built"
+          echo "Failed builds:     $failed"
+
+          find pdf-artifacts -type f -name '*.pdf' -print | sort
+
+          if [ "$built" -eq 0 ]; then
+            echo "No PDFs were built."
+            exit 1
+          fi
+
+          if [ "$failed" -ne 0 ]; then
+            echo "$failed LaTeX build(s) failed."
+            exit 1
+          fi
+
+      - name: Upload PDF artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: tex-pdfs
+          path: pdf-artifacts/**/*.pdf
+          if-no-files-found: error
+          
