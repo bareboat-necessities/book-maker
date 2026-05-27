@@ -1967,6 +1967,185 @@ Numerics & $\bigO(h^p)$ & asymptotic error order \\
 \end{tabular}
 \end{table*}
 
+\section{Cyrillic and Russian Letters in Mathematical Notation}
+
+Cyrillic letters are not part of the standard international mathematical
+symbol alphabet in the same way as Latin and Greek letters. In most modern
+publications, variables, constants, sets, operators, and functions are written
+with Latin or Greek symbols:
+\[
+x,\quad y,\quad A,\quad B,\quad \alpha,\quad \lambda,\quad \Omega.
+\]
+
+Russian and other Cyrillic letters appear mainly in Russian-language textbooks,
+lecture notes, examples, indices, abbreviations, and a few specialized symbols.
+
+\subsection{Russian-Language Textbooks and Notes}
+
+In Russian mathematical writing, the prose is Russian, but the main symbolic
+notation is still usually Latin and Greek:
+\[
+x \in \R,
+\qquad
+f:X\to Y,
+\qquad
+\lambda \text{ is an eigenvalue}.
+\]
+
+Cyrillic words often appear inside explanatory text:
+\[
+x_{\text{нач}},
+\qquad
+x_{\text{кон}},
+\qquad
+v_{\text{ср}}.
+\]
+
+Here,
+\[
+\text{нач} \approx \text{initial},
+\qquad
+\text{кон} \approx \text{final},
+\qquad
+\text{ср} \approx \text{average}.
+\]
+
+For example,
+\[
+v_{\text{ср}}
+=
+\frac{x_{\text{кон}}-x_{\text{нач}}}{t_{\text{кон}}-t_{\text{нач}}}.
+\]
+
+This style is common in educational or engineering contexts, but less common
+in international journal notation.
+
+\subsection{Cyrillic Letters as Labels}
+
+Cyrillic letters may be used as labels for points, curves, regions, diagrams,
+or examples in Russian-language materials:
+\[
+\text{точка А},
+\qquad
+\text{прямая } \ell,
+\qquad
+\text{область } \Omega.
+\]
+
+However, even in Russian geometry books, Latin letters are commonly used for
+points and lines:
+\[
+A,\quad B,\quad C,\quad a,\quad b,\quad c.
+\]
+
+Cyrillic labels are possible, but they are not the dominant mathematical
+convention.
+
+\subsection{The Cyrillic Letter \texorpdfstring{$\text{Ш}$}{Sh}}
+
+One famous specialized use of a Cyrillic letter is the letter
+\(\text{Ш}\), pronounced ``sha.'' It appears in number theory and arithmetic
+geometry in the notation for the Tate--Shafarevich group:
+\[
+\text{Ш}(A/K).
+\]
+
+This is one of the rare cases where a Cyrillic letter became part of
+international mathematical notation.
+
+\subsection{Cyrillic in Subscripts and Abbreviations}
+
+Cyrillic is more naturally used in subscripts or text annotations than as
+standalone mathematical variables:
+\[
+T_{\text{вх}},
+\qquad
+T_{\text{вых}},
+\qquad
+p_{\text{атм}},
+\qquad
+m_{\text{сумм}}.
+\]
+
+These may mean, depending on context,
+\[
+\text{вх} = \text{input},
+\qquad
+\text{вых} = \text{output},
+\qquad
+\text{атм} = \text{atmospheric},
+\qquad
+\text{сумм} = \text{total}.
+\]
+
+For international writing, it is usually better to use English or neutral
+abbreviations:
+\[
+T_{\text{in}},
+\qquad
+T_{\text{out}},
+\qquad
+p_{\text{atm}},
+\qquad
+m_{\text{tot}}.
+\]
+
+\subsection{Cyrillic in Computer Science and Examples}
+
+Cyrillic letters may also appear when examples involve strings, alphabets,
+languages, or text processing:
+\[
+\Sigma = \{\text{а},\text{б},\text{в},\ldots\}.
+\]
+
+For example, in formal language theory or Unicode processing, one may define
+an alphabet containing Cyrillic symbols:
+\[
+w = \text{``математика''}.
+\]
+
+Here the Cyrillic letters are not mathematical variables; they are literal
+characters from a language.
+
+\subsection{Practical Convention}
+
+In international mathematical writing, avoid using Cyrillic letters as primary
+variables unless there is a strong reason. Prefer:
+\[
+x,\quad y,\quad z,
+\qquad
+\alpha,\quad \beta,\quad \gamma,
+\qquad
+\mat{A},\quad \mat{B},\quad \mat{C}.
+\]
+
+Use Cyrillic mostly for:
+\[
+\text{Russian text},
+\qquad
+\text{Russian abbreviations},
+\qquad
+\text{labels in Russian-language notes},
+\qquad
+\text{literal characters in examples},
+\qquad
+\text{special established notation such as } \text{Ш}.
+\]
+
+\subsection{LaTeX Note}
+
+With LuaLaTeX or XeLaTeX, Cyrillic text can be written directly:
+\[
+x_{\text{нач}},
+\qquad
+v_{\text{ср}},
+\qquad
+\text{Ш}(A/K).
+\]
+
+For best compatibility, Cyrillic annotations should usually be placed inside
+\verb|\text{...}| rather than treated as ordinary math variables.
+
 \section{Conclusion}
 
 Mathematical notation is a compact way to express relationships between
