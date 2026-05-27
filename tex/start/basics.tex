@@ -9,7 +9,7 @@
 \setlength{\columnsep}{0.25in}
 
 % ------------------------------------------------------------
-% Fonts: use LuaLaTeX or XeLaTeX
+% Fonts: LuaLaTeX or XeLaTeX
 % ------------------------------------------------------------
 \usepackage{fontspec}
 \usepackage{unicode-math}
@@ -23,7 +23,10 @@
 % Core math
 % ------------------------------------------------------------
 \usepackage{amsmath}
-\usepackage{amssymb}
+% Do NOT load amssymb or amsfonts with unicode-math.
+% \usepackage{amssymb}  % conflicts with unicode-math: \eth already defined
+% \usepackage{amsfonts} % unnecessary with unicode-math
+
 \usepackage{mathtools}
 \usepackage{bm}
 \usepackage{tensor}
