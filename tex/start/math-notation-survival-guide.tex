@@ -2718,9 +2718,9 @@ logic, signal processing, or numerical analysis.
 
 A common distinction is between hollow and filled shapes:
 \[
-\square,
+\safesquare,
 \qquad
-\blacksquare,
+\safeblacksquare,
 \qquad
 \circ,
 \qquad
@@ -2728,11 +2728,11 @@ A common distinction is between hollow and filled shapes:
 \qquad
 \triangle,
 \qquad
-\blacktriangle,
+\safeblacktriangle,
 \qquad
-\lozenge,
+\safediamond,
 \qquad
-\blacklozenge.
+\safeblackdiamond.
 \]
 
 Hollow shapes are often used as abstract operators or markers. Filled shapes
@@ -2741,19 +2741,20 @@ markers.
 
 \begin{table}[h]
 \centering
+\small
 \caption{Common hollow and solid shape symbols.}
 \begin{tabular}{lll}
 \toprule
 Symbol & Name & Common use \\
 \midrule
-$\square$ & square & modal logic, generic box operator, proof marker \\
-$\blacksquare$ & black square & end of proof \\
+$\safesquare$ & square & modal logic, generic box operator, proof marker \\
+$\safeblacksquare$ & black square & end of proof \\
 $\circ$ & small circle & composition, open point, circle operation \\
 $\bullet$ & bullet & dot product variant, graph node, marker \\
 $\triangle$ & triangle & geometry, symmetric difference, generic triangle \\
-$\blacktriangle$ & black triangle & marker, ordering relation, graph symbol \\
-$\diamond$ & diamond & modal logic, generic diamond operator \\
-$\lozenge$ & lozenge & diamond-like relation or marker \\
+$\safeblacktriangle$ & black triangle & marker, ordering relation, graph symbol \\
+$\safediamond$ & diamond & modal logic, generic diamond operator \\
+$\safeblackdiamond$ & black diamond & filled diamond-like marker \\
 $\star$ & star & convolution-like operation, special product \\
 $\ast$ & asterisk & multiplication-like operation, adjoint marker \\
 \bottomrule
@@ -2764,7 +2765,7 @@ For example, the filled square is commonly used to mark the end of a proof:
 \[
 \text{Therefore the claim follows.}
 \qquad
-\blacksquare
+\safeblacksquare
 \]
 
 \subsection{Squares and Boxes}
@@ -2773,32 +2774,32 @@ Squares and boxes appear in several areas.
 
 In logic, especially modal logic, a box may mean ``necessarily'':
 \[
-\square P.
+\safesquare P.
 \]
 
 A diamond may mean ``possibly'':
 \[
-\diamond P.
+\safediamond P.
 \]
 
 Together:
 \[
-\square P
+\safesquare P
 \quad
 \text{means necessarily } P,
 \qquad
-\diamond P
+\safediamond P
 \quad
 \text{means possibly } P.
 \]
 
 In proofs, a square marks completion:
 \[
-\blacksquare
+\safeblacksquare
 \qquad
 \text{or}
 \qquad
-\square.
+\safesquare.
 \]
 
 In diagrams and algorithms, squares may simply be node shapes:
@@ -2856,6 +2857,7 @@ Different dots have different meanings:
 
 \begin{table}[h]
 \centering
+\small
 \caption{Dot symbols and their common meanings.}
 \begin{tabular}{lll}
 \toprule
@@ -2922,6 +2924,7 @@ A \triangle B
 
 \begin{table}[h]
 \centering
+\small
 \caption{Triangle-related notation.}
 \begin{tabular}{lll}
 \toprule
@@ -2984,6 +2987,7 @@ means line segment \(AB\) is perpendicular to line segment \(CD\).
 
 \begin{table}[h]
 \centering
+\small
 \caption{Cross and perpendicular symbols.}
 \begin{tabular}{lll}
 \toprule
@@ -3005,23 +3009,23 @@ analysis.
 
 The basic angle symbol is
 \[
-\angle ABC.
+\safeangle ABC.
 \]
 
 This denotes the angle with vertex \(B\), formed by points \(A,B,C\).
 
-A measured angle may be written
+A measured angle may be written as
 \[
-\measuredangle ABC.
+\safemeasuredangle ABC.
 \]
 
-A right angle is often shown by a square-corner symbol:
+A right angle is often shown by a square-corner marker in a diagram, or by
+perpendicular notation:
 \[
-\perp
+AB \perp CD.
 \]
-or by a right-angle marker in a diagram.
 
-Common angle notation:
+Common angle variables include
 \[
 \theta,
 \qquad
@@ -3051,13 +3055,14 @@ In vector algebra:
 
 \begin{table}[h]
 \centering
+\small
 \caption{Angle-related notation.}
 \begin{tabular}{lll}
 \toprule
 Symbol & Name & Common use \\
 \midrule
-$\angle ABC$ & angle & geometric angle with vertex \(B\) \\
-$\measuredangle ABC$ & measured angle & explicitly measured angle \\
+$\safeangle ABC$ & angle & geometric angle with vertex \(B\) \\
+$\safemeasuredangle ABC$ & measured angle & explicitly measured angle \\
 $\theta,\phi$ & angle variables & trigonometry, phase, rotation \\
 $\arg z$ & argument & angle of a complex number \\
 $\perp$ & right angle / perpendicular & orthogonality \\
@@ -3104,6 +3109,7 @@ what \(^*\) means.
 
 \begin{table}[h]
 \centering
+\small
 \caption{Star notation.}
 \begin{tabular}{lll}
 \toprule
@@ -3168,6 +3174,7 @@ In this document, bold notation is preferred:
 
 \begin{table}[h]
 \centering
+\small
 \caption{Common arrow symbols.}
 \begin{tabular}{lll}
 \toprule
@@ -3251,6 +3258,7 @@ x\to\infty.
 
 \begin{table}[h]
 \centering
+\small
 \caption{Wavy and approximation symbols.}
 \begin{tabular}{lll}
 \toprule
@@ -3273,11 +3281,17 @@ commutative diagrams.
 
 Common meanings include:
 \[
-\text{dotted line} \quad \longrightarrow \quad
+\text{dotted line}
+\quad
+\longrightarrow
+\quad
 \text{optional, hidden, weak, or reference relation},
 \]
 \[
-\text{dashed line} \quad \longrightarrow \quad
+\text{dashed line}
+\quad
+\longrightarrow
+\quad
 \text{constraint, boundary, approximation, or missing edge}.
 \]
 
@@ -3315,35 +3329,22 @@ A closed line integral is written
 
 This usually means that \(C\) is a closed curve.
 
-A closed surface integral is often written
+A closed surface integral may be written descriptively as
+\[
+\oint_{\partial\Omega}
+\vct{F}\cdot\vct{n}\,\dd S.
+\]
+
+Some LaTeX setups also provide special closed surface integral symbols such as
 \[
 \oiint_{\partial\Omega}
 \vct{F}\cdot\vct{n}\,\dd S.
 \]
 
-This means integration over a closed surface, usually the boundary
-\(\partial\Omega\) of a volume \(\Omega\).
+If \verb|\oiint| is not available in a particular setup, write the closed
+surface integral using \verb|\oint| or define a local symbol.
 
-A closed volume-style integral may be written
-\[
-\oiiint_{\partial V}
-f\,\dd V,
-\]
-although this notation is less common than \(\oint\) and \(\oiint\).
-
-The most common practical uses are:
-\[
-\oint_C
-\quad
-\text{closed curve integral},
-\]
-\[
-\oiint_{\partial\Omega}
-\quad
-\text{closed surface integral}.
-\]
-
-For example, the divergence theorem may be written
+The divergence theorem may be written as
 \[
 \oiint_{\partial\Omega}
 \vct{F}\cdot\vct{n}\,\dd S
@@ -3396,6 +3397,7 @@ endpoint that can be included:
 
 \begin{table}[h]
 \centering
+\small
 \caption{Interval bracket notation.}
 \begin{tabular}{lll}
 \toprule
@@ -3445,22 +3447,23 @@ notation is
 
 \begin{table*}[t]
 \centering
+\small
 \caption{Summary of geometrical shape symbols.}
 \begin{tabular}{lll}
 \toprule
 Shape family & Examples & Common meanings \\
 \midrule
-Squares & $\square,\blacksquare,\boxed{x}$ & modal logic, proof end, emphasized expressions \\
+Squares & $\safesquare,\safeblacksquare,\boxed{x}$ & modal logic, proof end, emphasized expressions \\
 Circles & $\circ,\bullet,\cdot$ & composition, operation, dot product, markers \\
-Diamonds & $\diamond,\lozenge$ & modal logic, relation, marker \\
+Diamonds & $\safediamond,\safeblackdiamond$ & modal logic, relation, marker \\
 Triangles & $\triangle,\Delta,\nabla$ & geometry, change, Laplacian, gradient operator \\
 Crosses & $\times,\oplus,\otimes$ & product, direct sum, tensor product \\
 Perpendicular & $\perp,U^\perp$ & orthogonality, perpendicular lines, complements \\
-Angles & $\angle ABC,\theta,\arg z$ & geometric angle, phase, complex argument \\
+Angles & $\safeangle ABC,\theta,\arg z$ & geometric angle, phase, complex argument \\
 Stars & $\ast,\star,x^*$ & convolution, custom product, optimum, adjoint \\
 Arrows & $\to,\mapsto,\Rightarrow,\Leftrightarrow$ & maps, limits, implication, equivalence \\
 Wavy symbols & $\sim,\approx,\simeq,\propto$ & similarity, approximation, proportionality \\
-Closed integrals & $\oint,\oiint,\oiiint$ & closed curve/surface/boundary integrals \\
+Closed integrals & $\oint,\oiint$ & closed curve/surface/boundary integrals \\
 Intervals & $(a,b),[a,b],[a,b),(a,b]$ & endpoint inclusion/exclusion \\
 \bottomrule
 \end{tabular}
