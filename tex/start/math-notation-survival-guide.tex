@@ -4117,6 +4117,850 @@ Then interpret the decoration:
 In these fields, notation is compact but context-heavy. A symbol that is obvious
 inside one subfield may mean something completely different in another.
 
+\section{Basic Chemistry Notation}
+
+Chemistry uses mathematical notation, but it also has its own symbolic language:
+element symbols, molecular formulas, charges, isotopes, reaction arrows,
+orbitals, bonds, phases, and equilibrium notation.
+
+\subsection{Elements, Molecules, and Ions}
+
+Chemical elements are written with one- or two-letter symbols:
+\[
+\ce{H},
+\qquad
+\ce{O},
+\qquad
+\ce{C},
+\qquad
+\ce{Na},
+\qquad
+\ce{Cl}.
+\]
+
+Molecules are written by combining element symbols with subscripts:
+\[
+\ce{H2O},
+\qquad
+\ce{CO2},
+\qquad
+\ce{O2},
+\qquad
+\ce{CH4}.
+\]
+
+Ions carry charge:
+\[
+\ce{Na+},
+\qquad
+\ce{Cl-},
+\qquad
+\ce{Ca^2+},
+\qquad
+\ce{SO4^2-}.
+\]
+
+The charge is usually written as a superscript.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Basic chemical notation.}
+\begin{tabular}{lll}
+\toprule
+Notation & Name & Meaning \\
+\midrule
+$\ce{H2O}$ & water & molecule with 2 H and 1 O \\
+$\ce{CO2}$ & carbon dioxide & molecule with 1 C and 2 O \\
+$\ce{Na+}$ & sodium ion & positive ion \\
+$\ce{Cl-}$ & chloride ion & negative ion \\
+$\ce{SO4^2-}$ & sulfate & ion with charge \(-2\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Chemical Reactions}
+
+A chemical reaction is written with an arrow:
+\[
+\ce{2H2 + O2 -> 2H2O}.
+\]
+
+This reads: two molecules of hydrogen react with one molecule of oxygen to
+form two molecules of water.
+
+A reversible or equilibrium reaction is written
+\[
+\ce{N2 + 3H2 <=> 2NH3}.
+\]
+
+Reaction conditions may be written above or below the arrow:
+\[
+\ce{A ->[\Delta] B},
+\qquad
+\ce{A ->[h\nu] B}.
+\]
+
+Here, \(\Delta\) often means heat, and \(h\nu\) indicates light or photon
+energy.
+
+\subsection{States of Matter}
+
+Chemical equations often include physical states:
+\[
+\ce{H2O(l)},
+\qquad
+\ce{H2O(g)},
+\qquad
+\ce{NaCl(s)},
+\qquad
+\ce{Na+(aq)}.
+\]
+
+\begin{table}[h]
+\centering
+\small
+\caption{Chemical state notation.}
+\begin{tabular}{ll}
+\toprule
+Symbol & Meaning \\
+\midrule
+\(\ce{(s)}\) & solid \\
+\(\ce{(l)}\) & liquid \\
+\(\ce{(g)}\) & gas \\
+\(\ce{(aq)}\) & aqueous solution \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Example:
+\[
+\ce{NaCl(s) -> Na+(aq) + Cl-(aq)}.
+\]
+
+\subsection{Isotopes and Nuclear Notation}
+
+Isotopes are written with the mass number as a superscript:
+\[
+\ce{^{12}C},
+\qquad
+\ce{^{14}C},
+\qquad
+\ce{^{235}U}.
+\]
+
+In nuclear notation, one may write
+\[
+{}^{A}_{Z}X,
+\]
+where \(A\) is the mass number, \(Z\) is the atomic number, and \(X\) is the
+element symbol.
+
+For example,
+\[
+{}^{14}_{6}\ce{C}
+\]
+denotes carbon-14.
+
+\subsection{pH and Concentration}
+
+The pH of a solution is defined by
+\[
+\mathrm{pH}
+=
+-\log_{10}[\ce{H+}].
+\]
+
+Square brackets in chemistry often mean concentration:
+\[
+[\ce{H+}],
+\qquad
+[\ce{OH-}],
+\qquad
+[\ce{Na+}].
+\]
+
+For example,
+\[
+[\ce{H+}]
+=
+10^{-7}\,\unit{mol/L}
+\quad
+\Rightarrow
+\quad
+\mathrm{pH}=7.
+\]
+
+\section{Electrical and Electronics Notation}
+
+Electrical engineering uses symbols for voltage, current, resistance,
+capacitance, inductance, impedance, power, frequency, and signals.
+
+\subsection{Basic Circuit Quantities}
+
+The most common electrical quantities are:
+\[
+V,
+\qquad
+I,
+\qquad
+R,
+\qquad
+C,
+\qquad
+L.
+\]
+
+\begin{table}[h]
+\centering
+\small
+\caption{Basic electrical quantities.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Quantity & SI unit \\
+\midrule
+\(V\) & voltage & \(\unit{V}\) \\
+\(I\) & current & \(\unit{A}\) \\
+\(R\) & resistance & \(\unit{\ohm}\) \\
+\(C\) & capacitance & \(\unit{F}\) \\
+\(L\) & inductance & \(\unit{H}\) \\
+\(P\) & power & \(\unit{W}\) \\
+\(f\) & frequency & \(\unit{Hz}\) \\
+\(\omega\) & angular frequency & \(\unit{rad/s}\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ohm's law is
+\[
+V = IR.
+\]
+
+Power can be written as
+\[
+P = VI,
+\qquad
+P = I^2R,
+\qquad
+P = \frac{V^2}{R}.
+\]
+
+\subsection{AC Signals and Phasors}
+
+A sinusoidal voltage may be written
+\[
+v(t)
+=
+V_0\cos(\omega t+\phi).
+\]
+
+Here \(V_0\) is amplitude, \(\omega\) is angular frequency, and \(\phi\) is
+phase.
+
+Using complex notation,
+\[
+v(t)
+=
+\Real\left\{
+\tilde{V}e^{\ii\omega t}
+\right\}.
+\]
+
+The complex number \(\tilde{V}\) is a phasor:
+\[
+\tilde{V}
+=
+V_0e^{\ii\phi}.
+\]
+
+\subsection{Impedance}
+
+In AC circuit analysis, resistance generalizes to impedance:
+\[
+Z.
+\]
+
+For a resistor:
+\[
+Z_R = R.
+\]
+
+For a capacitor:
+\[
+Z_C
+=
+\frac{1}{\ii\omega C}.
+\]
+
+For an inductor:
+\[
+Z_L
+=
+\ii\omega L.
+\]
+
+Ohm's law in phasor form is
+\[
+\tilde{V}
+=
+Z\tilde{I}.
+\]
+
+\begin{table}[h]
+\centering
+\small
+\caption{Common impedances.}
+\begin{tabular}{ll}
+\toprule
+Element & Impedance \\
+\midrule
+Resistor & \(Z_R=R\) \\
+Capacitor & \(Z_C=1/(\ii\omega C)\) \\
+Inductor & \(Z_L=\ii\omega L\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Electronics Signals and Logic}
+
+Digital electronics often uses binary values:
+\[
+0,
+\qquad
+1.
+\]
+
+Logic gates are written using Boolean notation:
+\[
+A \land B,
+\qquad
+A \lor B,
+\qquad
+\neg A.
+\]
+
+In engineering notation, one may also see
+\[
+A \cdot B
+\]
+for AND, and
+\[
+A+B
+\]
+for OR, depending on context.
+
+A clock signal may be written
+\[
+\mathrm{CLK}.
+\]
+
+A reset signal may be written
+\[
+\mathrm{RESET},
+\qquad
+\overline{\mathrm{RESET}},
+\qquad
+\mathrm{RESET}_n.
+\]
+
+The bar or subscript \(n\) often indicates an active-low signal.
+
+\subsection{Transfer Functions}
+
+A linear time-invariant system may be described by a transfer function:
+\[
+H(s)
+=
+\frac{Y(s)}{X(s)}.
+\]
+
+In frequency response notation:
+\[
+H(\ii\omega)
+=
+\frac{Y(\ii\omega)}{X(\ii\omega)}.
+\]
+
+Magnitude and phase are written
+\[
+\abs{H(\ii\omega)},
+\qquad
+\arg H(\ii\omega).
+\]
+
+\section{Biology and DNA Notation}
+
+Biology uses symbolic notation for DNA, RNA, proteins, genes, mutations,
+chromosomes, and sequence alignments.
+
+\subsection{DNA and RNA Bases}
+
+DNA sequences use four bases:
+\[
+\texttt{A},
+\qquad
+\texttt{C},
+\qquad
+\texttt{G},
+\qquad
+\texttt{T}.
+\]
+
+They stand for adenine, cytosine, guanine, and thymine.
+
+RNA uses uracil instead of thymine:
+\[
+\texttt{A},
+\qquad
+\texttt{C},
+\qquad
+\texttt{G},
+\qquad
+\texttt{U}.
+\]
+
+\begin{table}[h]
+\centering
+\small
+\caption{DNA and RNA base notation.}
+\begin{tabular}{lll}
+\toprule
+Symbol & DNA/RNA base & Appears in \\
+\midrule
+\texttt{A} & adenine & DNA and RNA \\
+\texttt{C} & cytosine & DNA and RNA \\
+\texttt{G} & guanine & DNA and RNA \\
+\texttt{T} & thymine & DNA \\
+\texttt{U} & uracil & RNA \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A DNA sequence may be written
+\[
+\texttt{5'-ACGTGCA-3'}.
+\]
+
+The reverse complementary strand is written in the opposite direction:
+\[
+\texttt{3'-TGCACGT-5'}.
+\]
+
+\subsection{Base Pairing}
+
+DNA base pairing is commonly represented as
+\[
+\texttt{A}\leftrightarrow\texttt{T},
+\qquad
+\texttt{C}\leftrightarrow\texttt{G}.
+\]
+
+In RNA:
+\[
+\texttt{A}\leftrightarrow\texttt{U},
+\qquad
+\texttt{C}\leftrightarrow\texttt{G}.
+\]
+
+A double-stranded DNA fragment can be written as
+\[
+\begin{array}{ccccccc}
+5' & \texttt{A} & \texttt{C} & \texttt{G} & \texttt{T} & \texttt{G} & 3'\\
+3' & \texttt{T} & \texttt{G} & \texttt{C} & \texttt{A} & \texttt{C} & 5'
+\end{array}
+\]
+
+\subsection{Genes, Alleles, and Mutations}
+
+Genes are often written in italic or symbolic form:
+\[
+BRCA1,
+\qquad
+TP53,
+\qquad
+lacZ.
+\]
+
+A mutation may be written as a substitution:
+\[
+A \to G.
+\]
+
+In DNA sequence notation:
+\[
+\texttt{A23G}
+\]
+may mean that at position 23, base \texttt{A} is replaced by base \texttt{G}.
+
+Protein mutations are often written similarly:
+\[
+\mathrm{Gly12Asp},
+\qquad
+\mathrm{G12D}.
+\]
+
+This means glycine at position 12 is replaced by aspartic acid.
+
+\subsection{Proteins and Amino Acids}
+
+Proteins are sequences of amino acids. Amino acids may be written with
+three-letter or one-letter codes:
+\[
+\mathrm{Gly},
+\qquad
+\mathrm{Ala},
+\qquad
+\mathrm{Ser},
+\qquad
+\mathrm{Val}.
+\]
+
+One-letter codes include:
+\[
+\texttt{G},
+\qquad
+\texttt{A},
+\qquad
+\texttt{S},
+\qquad
+\texttt{V}.
+\]
+
+A protein sequence may be written
+\[
+\texttt{MTEYKLVVVG}.
+\]
+
+\begin{table}[h]
+\centering
+\small
+\caption{Examples of amino acid notation.}
+\begin{tabular}{lll}
+\toprule
+One-letter & Three-letter & Amino acid \\
+\midrule
+\texttt{G} & Gly & glycine \\
+\texttt{A} & Ala & alanine \\
+\texttt{S} & Ser & serine \\
+\texttt{V} & Val & valine \\
+\texttt{M} & Met & methionine \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Sequence Alignment Symbols}
+
+In sequence alignment, matching and mismatching positions are shown visually:
+\[
+\begin{array}{cccccc}
+\texttt{A} & \texttt{C} & \texttt{G} & \texttt{T} & \texttt{A} & \texttt{C}\\
+\vert      & \vert      &           & \vert      &           & \vert\\
+\texttt{A} & \texttt{C} & \texttt{A} & \texttt{T} & \texttt{-} & \texttt{C}
+\end{array}
+\]
+
+Here, vertical bars indicate matches, blank spaces indicate mismatches, and
+\texttt{-} indicates a gap.
+
+\section{Elementary Particle Notation}
+
+Particle physics uses compact symbols for particles, antiparticles, charges,
+spin, generations, interactions, and decays.
+
+\subsection{Common Particles}
+
+The electron is written
+\[
+e^-.
+\]
+
+The positron, its antiparticle, is written
+\[
+e^+.
+\]
+
+The proton and neutron are written
+\[
+p,
+\qquad
+n.
+\]
+
+Neutrinos are written
+\[
+\nu_e,
+\qquad
+\nu_\mu,
+\qquad
+\nu_\tau.
+\]
+
+Their antiparticles are written with bars:
+\[
+\bar{\nu}_e,
+\qquad
+\bar{\nu}_\mu,
+\qquad
+\bar{\nu}_\tau.
+\]
+
+\begin{table}[h]
+\centering
+\small
+\caption{Common elementary particle notation.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Charge \\
+\midrule
+\(e^-\) & electron & \(-1\) \\
+\(e^+\) & positron & \(+1\) \\
+\(\mu^-\) & muon & \(-1\) \\
+\(\mu^+\) & antimuon & \(+1\) \\
+\(\tau^-\) & tau lepton & \(-1\) \\
+\(\nu_e\) & electron neutrino & \(0\) \\
+\(p\) & proton & \(+1\) \\
+\(n\) & neutron & \(0\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Quarks}
+
+Quarks are commonly denoted by letters:
+\[
+u,
+\qquad
+d,
+\qquad
+c,
+\qquad
+s,
+\qquad
+t,
+\qquad
+b.
+\]
+
+These stand for up, down, charm, strange, top, and bottom.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Quark notation.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Name & Charge \\
+\midrule
+\(u\) & up & \(+2/3\) \\
+\(d\) & down & \(-1/3\) \\
+\(c\) & charm & \(+2/3\) \\
+\(s\) & strange & \(-1/3\) \\
+\(t\) & top & \(+2/3\) \\
+\(b\) & bottom & \(-1/3\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Antiquarks are written with bars:
+\[
+\bar{u},
+\qquad
+\bar{d},
+\qquad
+\bar{s}.
+\]
+
+A proton has quark content
+\[
+p = uud.
+\]
+
+A neutron has quark content
+\[
+n = udd.
+\]
+
+\subsection{Gauge Bosons and Force Carriers}
+
+Important force-carrying particles include:
+\[
+\gamma,
+\qquad
+g,
+\qquad
+W^\pm,
+\qquad
+Z^0.
+\]
+
+The photon is
+\[
+\gamma.
+\]
+
+The gluon is
+\[
+g.
+\]
+
+The weak bosons are
+\[
+W^+,
+\qquad
+W^-,
+\qquad
+Z^0.
+\]
+
+\begin{table}[h]
+\centering
+\small
+\caption{Force carrier notation.}
+\begin{tabular}{lll}
+\toprule
+Symbol & Particle & Interaction \\
+\midrule
+\(\gamma\) & photon & electromagnetic \\
+\(g\) & gluon & strong \\
+\(W^\pm\) & W bosons & weak \\
+\(Z^0\) & Z boson & weak \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Particle Reactions and Decays}
+
+Particle reactions are written with arrows:
+\[
+A \to B + C.
+\]
+
+For example, beta decay may be written
+\[
+n
+\to
+p + e^- + \bar{\nu}_e.
+\]
+
+Electron--positron annihilation may be written
+\[
+e^- + e^+
+\to
+\gamma + \gamma.
+\]
+
+A decay chain may be written
+\[
+X \to Y \to Z.
+\]
+
+Branching ratios are sometimes written as
+\[
+\mathcal{B}(X\to Y).
+\]
+
+\subsection{Spin, Charge, and Quantum Numbers}
+
+Spin is often written as
+\[
+s,
+\qquad
+J.
+\]
+
+Charge may be written as
+\[
+Q.
+\]
+
+Other quantum numbers include:
+\[
+B,
+\qquad
+L,
+\qquad
+I,
+\qquad
+Y.
+\]
+
+Depending on context, these may denote baryon number, lepton number, isospin,
+and hypercharge.
+
+A particle state may be labeled by quantum numbers:
+\[
+\ket{J,m}.
+\]
+
+For angular momentum:
+\[
+J^2\ket{j,m}
+=
+\hbar^2 j(j+1)\ket{j,m},
+\qquad
+J_z\ket{j,m}
+=
+\hbar m\ket{j,m}.
+\]
+
+\subsection{Feynman Diagram Notation}
+
+In Feynman diagrams, line styles indicate particle types.
+
+Common visual conventions are:
+\[
+\text{straight line}
+\quad
+\text{fermion},
+\]
+\[
+\text{wavy line}
+\quad
+\text{photon or gauge boson},
+\]
+\[
+\text{curly line}
+\quad
+\text{gluon},
+\]
+\[
+\text{dashed line}
+\quad
+\text{scalar particle or auxiliary field}.
+\]
+
+These are diagram conventions, not algebraic symbols. Their meaning should be
+defined in the figure caption or surrounding text.
+
+\subsection{Summary of Scientific Symbol Systems}
+
+\begin{table*}[t]
+\centering
+\small
+\caption{Examples of specialized notation in chemistry, electronics, biology, and particle physics.}
+\begin{tabular}{llll}
+\toprule
+Field & Symbol & Meaning & Example \\
+\midrule
+Chemistry & \(\ce{H2O}\) & molecule & water \\
+Chemistry & \(\ce{Na+}\) & ion & sodium ion \\
+Chemistry & \(\ce{A -> B}\) & reaction & reactant to product \\
+Chemistry & \([\ce{H+}]\) & concentration & hydrogen ion concentration \\
+Electrical & \(V=IR\) & Ohm's law & voltage-current-resistance \\
+Electrical & \(Z\) & impedance & \(\tilde{V}=Z\tilde{I}\) \\
+Electronics & \(0,1\) & logic states & binary signals \\
+Electronics & \(\overline{\mathrm{RESET}}\) & active-low signal & reset line \\
+Biology & \(\texttt{A,C,G,T}\) & DNA bases & DNA sequence alphabet \\
+Biology & \(\texttt{A,C,G,U}\) & RNA bases & RNA sequence alphabet \\
+Biology & \(\texttt{G12D}\) & mutation & amino acid substitution \\
+Particles & \(e^-\) & electron & charged lepton \\
+Particles & \(\nu_e\) & electron neutrino & neutral lepton \\
+Particles & \(u,d,s\) & quarks & matter constituents \\
+Particles & \(\gamma,g,W^\pm,Z^0\) & bosons & force carriers \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 \section{Conclusion}
 
 Mathematical notation is a compact way to express relationships between
