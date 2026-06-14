@@ -1462,6 +1462,1327 @@ allows it.  The protocol is therefore best understood as a shared
 publish/subscribe value bus with writable properties, rather than as a
 strict request-response API.
 
+\section{Control Parameters, Gates, and Filters}
+\label{sec:pypilot-parameters}
+The pypilot control stack contains many explicit gains, filters, clamps,
+timeouts, and gating rules.  These are not incidental constants; they are
+part of the practical behavior of the autopilot.  The main active
+subsystems are the pilot controller, the heading and inertial filters, the
+wind and navigation filters, the tacking state machine, and the servo
+driver.  This section summarizes the important parameters found in the
+source code, their defaults, their code-enforced ranges where applicable,
+and reasonable practical tuning ranges.
+Throughout the code, many filters are first-order exponential moving
+averages of the form
+\[
+x_f[k]
+=
+(1-\alpha)x_f[k-1] + \alpha x[k],
+\]
+where \(\alpha\) is the filter constant.  For small \(\alpha\), the
+approximate time constant is
+\[
+\tau \approx \frac{\Delta t}{\alpha}.
+\]
+Thus, at the default IMU/control rate of \SI{20}{Hz}, where
+\(\Delta t = \SI{0.05}{s}\), a filter constant of \(\alpha=0.2\)
+corresponds to a fast time constant of roughly \(\SI{0.25}{s}\), while
+\(\alpha=0.01\) corresponds to a much slower filter.
+The tables below distinguish between two different notions of range:
+\emph{code range} is the range accepted by the pypilot value system, while
+\emph{practical range} is a conservative operating range for real tuning.
+The practical ranges are intentionally narrower than the code ranges.
+\subsection{Active Pilot Gains}
+In the inspected source tree, the normally active pilot modules are
+\texttt{basic}, \texttt{wind}, and \texttt{absolute}.  Several other
+pilots exist in the source tree, but are marked disabled and should be
+treated as experimental unless explicitly enabled.
+\subsubsection{Basic Pilot}
+The basic pilot is the normal compass/GPS/NAV heading-hold controller.  It
+uses an extended proportional--derivative form:
+\[
+u
+=
+K_P e
++
+K_D \dot{\psi}
++
+K_{DD} \ddot{\psi}
++
+K_{PR}\operatorname{sgn}(e)\sqrt{\abs{e}}
++
+K_{FF}\dot{\psi}_c ,
+\]
+where \(u\) is the normalized servo command, \(e\) is the heading error,
+\(\dot{\psi}\) is measured heading rate, \(\ddot{\psi}\) is heading
+rate-of-rate, and \(\dot{\psi}_c\) is the filtered change in commanded
+heading.  The square-root term is unusual compared with a conventional PID
+controller.  It gives useful authority near small and moderate heading
+errors without requiring a large linear proportional gain.
+\begin{table*}[t]
+\centering
+\caption{Basic pilot gains.}
+\label{tab:pypilot-basic-gains}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{ap.pilot.basic.P} &
+\num{0.003} &
+\(\num{0}\ldots\num{0.03}\) &
+\(\num{0.001}\ldots\num{0.010}\) &
+Linear heading-error gain.  Higher values turn harder toward the commanded heading; excessive values cause hunting. \\
+\texttt{ap.pilot.basic.D} &
+\num{0.09} &
+\(\num{0}\ldots\num{0.24}\) &
+\(\num{0.04}\ldots\num{0.16}\) &
+Heading-rate damping from the gyro.  Higher values suppress oscillation but can make the response sluggish. \\
+\texttt{ap.pilot.basic.DD} &
+\num{0.075} &
+\(\num{0}\ldots\num{0.24}\) &
+\(\num{0}\ldots\num{0.14}\) &
+Heading-acceleration damping.  Useful for suppressing sharp yaw-rate changes; too much can amplify noise. \\
+\texttt{ap.pilot.basic.PR} &
+\num{0.005} &
+\(\num{0}\ldots\num{0.02}\) &
+\(\num{0.002}\ldots\num{0.010}\) &
+Square-root heading-error gain.  Adds authority without requiring a large linear \(P\) gain. \\
+\texttt{ap.pilot.basic.FF} &
+\num{0.6} &
+\(\num{0}\ldots\num{2.4}\) &
+\(\num{0.2}\ldots\num{1.2}\) &
+Feed-forward from commanded heading changes.  Improves response to button pushes or external course changes. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+Practical symptoms and adjustments are summarized in
+\cref{tab:pypilot-basic-tuning}.
+\begin{table}[h]
+\centering
+\caption{Basic pilot tuning symptoms.}
+\label{tab:pypilot-basic-tuning}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+Observed behavior & Likely adjustment \\
+\midrule
+Slowly wanders off course &
+Increase \texttt{P} or \texttt{PR}. \\
+Oscillates around course &
+Decrease \texttt{P}/\texttt{PR}, or increase \texttt{D}. \\
+Rudder chatters or reacts to noisy yaw acceleration &
+Decrease \texttt{DD}. \\
+Course changes feel delayed &
+Increase \texttt{FF}. \\
+Course changes overshoot badly &
+Decrease \texttt{FF} or \texttt{P}; increase \texttt{D}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\subsubsection{Wind Pilot}
+The wind pilot has a similar structure but adds a wind-gust term:
+\[
+u
+=
+K_P e
++
+K_D \dot{\psi}
++
+K_{DD} \ddot{\psi}
++
+K_{WG} g_w ,
+\]
+where \(g_w\) is the apparent wind-speed change used as a gust signal.
+\begin{table*}[t]
+\centering
+\caption{Wind pilot gains.}
+\label{tab:pypilot-wind-gains}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{ap.pilot.wind.P} &
+\num{0.003} &
+\(\num{0}\ldots\num{0.02}\) &
+\(\num{0.001}\ldots\num{0.008}\) &
+Wind-angle or wind-referenced heading-error gain. \\
+\texttt{ap.pilot.wind.D} &
+\num{0.1} &
+\(\num{0}\ldots\num{1.0}\) &
+\(\num{0.04}\ldots\num{0.25}\) &
+Heading-rate damping. \\
+\texttt{ap.pilot.wind.DD} &
+\num{0.05} &
+\(\num{0}\ldots\num{1.0}\) &
+\(\num{0}\ldots\num{0.15}\) &
+Heading-acceleration damping. \\
+\texttt{ap.pilot.wind.WG} &
+\num{0} &
+\(\num{-0.1}\ldots\num{0.1}\) &
+\(\num{-0.03}\ldots\num{0.03}\) &
+Wind-gust compensation.  Should normally remain near zero unless wind data are clean and well-filtered. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The \texttt{WG} gain should be treated carefully.  A noisy wind sensor will
+inject noise directly into the rudder command if \texttt{WG} is increased.
+\subsubsection{Absolute Pilot}
+The absolute pilot attempts to command a rudder position rather than a
+relative motor speed.  It requires valid rudder feedback.  In the inspected
+source, it is present and active, but should be regarded as experimental
+because its behavior depends strongly on rudder calibration.
+\begin{table*}[t]
+\centering
+\caption{Absolute pilot gains.}
+\label{tab:pypilot-absolute-gains}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{ap.pilot.absolute.P} &
+\num{0.05} &
+\(\num{0}\ldots\num{0.3}\) &
+\(\num{0.02}\ldots\num{0.12}\) &
+Converts heading error into rudder-position command. \\
+\texttt{ap.pilot.absolute.I} &
+\num{0} &
+\(\num{0}\ldots\num{0.8}\) &
+\(\num{0}\ldots\num{0.05}\) &
+Integral correction.  Can wind up if used aggressively. \\
+\texttt{ap.pilot.absolute.D} &
+\num{0.05} &
+\(\num{0}\ldots\num{0.5}\) &
+\(\num{0.02}\ldots\num{0.15}\) &
+Heading-rate damping. \\
+\texttt{ap.pilot.absolute.FF} &
+\num{0} &
+\(\num{0}\ldots\num{1.0}\) &
+\(\num{0}\ldots\num{0.5}\) &
+Feed-forward from heading-command changes. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+\subsection{Heading Error, Command Rate, and Integral Gates}
+The autopilot does not feed unbounded heading error into the pilot.  The
+heading error is explicitly clamped:
+\[
+e
+=
+\operatorname{clamp}
+\left(
+\operatorname{resolv}(\psi-\psi_c),
+-30^\circ,
++30^\circ
+\right).
+\]
+Therefore, even if the vessel is far off course, the control law sees at
+most \(30^\circ\) of error.  This is a practical marine safety measure:
+it prevents extreme actuator commands after a sensor jump, a large
+disturbance, a tack, or a mode transition.
+\begin{table}[h]
+\centering
+\caption{Heading-error and command-rate gates.}
+\label{tab:pypilot-heading-gates}
+\begin{tabularx}{\columnwidth}{lclX}
+\toprule
+Gate/filter & Value & Tunable & Meaning \\
+\midrule
+Heading-error clamp &
+\(\pm 30^\circ\) &
+No &
+Maximum error seen by the pilot controller. \\
+Heading-command resolution &
+\(\num{0.1}^\circ\) &
+No &
+Commanded heading is rounded to tenths of a degree. \\
+Integral \(dt\) cap &
+\(\SI{1}{s}\) &
+No &
+Prevents a scheduler stall from producing a large integral jump. \\
+Integral clamp &
+\(\pm 10\) &
+No &
+Limits stored heading-error integral. \\
+Feed-forward EMA alpha &
+\num{0.1} &
+No &
+Smooths heading-command changes before use by \texttt{FF}. \\
+Feed-forward reset timeout &
+\(\SI{1}{s}\) &
+No &
+If the last command is older than this, the feed-forward reference resets. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+The heading-error integral is computed as
+\[
+I_e[k]
+=
+\operatorname{clamp}
+\left(
+I_e[k-1]
++
+\frac{e[k]}{50}\Delta t,
+-10,
+10
+\right).
+\]
+The active \texttt{basic} and \texttt{wind} pilots do not use this
+integral term in their default equations.  It is more relevant to the
+\texttt{absolute} pilot and to experimental or future pilots.
+The feed-forward command-rate signal is updated with
+\[
+\dot{\psi}_{c,f}[k]
+=
+0.9\,\dot{\psi}_{c,f}[k-1]
++
+0.1\,\Delta\psi_c[k].
+\]
+In non-wind modes, the sign is inverted before filtering; wind modes use
+the opposite sign convention because apparent wind direction is a
+``direction from'' measurement.
+\subsection{IMU and Heading Filters}
+The default IMU/control loop rate is \(\SI{20}{Hz}\).  The allowed rate
+choices are \(\SI{10}{Hz}\) and \(\SI{20}{Hz}\).
+\begin{table*}[t]
+\centering
+\caption{IMU and heading filter parameters.}
+\label{tab:pypilot-imu-filters}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{imu.rate} &
+\(\SI{20}{Hz}\) &
+\(\SI{10}{Hz}\) or \(\SI{20}{Hz}\) &
+\(\SI{20}{Hz}\) &
+Main IMU and autopilot loop rate. \\
+\texttt{imu.heading\_offset} &
+\(90^\circ\) &
+\(-180^\circ\ldots180^\circ\) &
+installation-dependent &
+Compass/IMU heading offset.  Default reflects the expected display-facing mounting orientation. \\
+\texttt{imu.heading\_lowpass\_constant} &
+\num{0.2} &
+\(\num{0.05}\ldots\num{0.3}\) &
+\(\num{0.1}\ldots\num{0.25}\) &
+EMA alpha for heading. \\
+\texttt{imu.headingrate\_lowpass\_constant} &
+\num{0.2} &
+\(\num{0.05}\ldots\num{0.3}\) &
+\(\num{0.1}\ldots\num{0.25}\) &
+EMA alpha for gyro-derived heading rate. \\
+\texttt{imu.headingraterate\_lowpass\_constant} &
+\num{0.1} &
+\(\num{0.05}\ldots\num{0.3}\) &
+\(\num{0.05}\ldots\num{0.15}\) &
+EMA alpha for heading acceleration. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+At \(\SI{20}{Hz}\), the approximate time constants are shown in
+\cref{tab:pypilot-alpha-timeconstants}.
+\begin{table}[h]
+\centering
+\caption{Approximate EMA time constants at \(\SI{20}{Hz}\).}
+\label{tab:pypilot-alpha-timeconstants}
+\begin{tabular}{cc}
+\toprule
+\(\alpha\) & Approximate time constant \\
+\midrule
+\num{0.05} & \(\SI{1.0}{s}\) \\
+\num{0.10} & \(\SI{0.5}{s}\) \\
+\num{0.20} & \(\SI{0.25}{s}\) \\
+\num{0.30} & \(\SI{0.17}{s}\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+The heading rate-of-rate estimate is guarded by an IMU timing gate:
+\[
+\ddot{\psi}
+=
+\begin{cases}
+\dfrac{\dot{\psi}[k]-\dot{\psi}[k-1]}{\Delta t},
+& \num{0.01} < \Delta t < \num{0.2},\\[8pt]
+0, & \text{otherwise}.
+\end{cases}
+\]
+This prevents malformed timing intervals from producing large
+\(\ddot{\psi}\) spikes.
+The heel estimate is another fixed EMA:
+\[
+\phi_{\mathrm{heel}}[k]
+=
+0.97\,\phi_{\mathrm{heel}}[k-1]
++
+0.03\,\phi_{\mathrm{roll}}[k].
+\]
+At \(\SI{20}{Hz}\), this is a slow filter with a time constant of roughly
+\(\SI{1.5}{s}\) to \(\SI{1.7}{s}\).
+The IMU warning logic also includes a simple alignment gate:
+\[
+\abs{\theta_{\mathrm{pitch}}} > 35^\circ
+\quad\text{or}\quad
+\abs{\theta_{\mathrm{roll}}} > 35^\circ .
+\]
+If either condition is true, pypilot appends an alignment warning.
+\subsection{Compass, GPS, and Wind Offset Filters}
+pypilot maintains long-term offsets between compass heading, GPS track,
+apparent wind, and true wind.  These offsets are not direct steering
+commands; they are slowly adapted references used to preserve continuity
+between modes.
+The GPS speed used for offset weighting is filtered by
+\[
+V_{g,f}[k]
+=
+0.998\,V_{g,f}[k-1]
++
+0.002\,V_g[k].
+\]
+The GPS-to-compass offset is only updated above a speed gate:
+\[
+V_g > \SI{1}{kn}.
+\]
+When this gate is satisfied, the update factor is
+\[
+\alpha_g
+=
+0.005\log(V_{g,f}+1).
+\]
+This gives GPS track more authority at higher speed and avoids using GPS
+course-over-ground when the vessel is nearly stationary.
+\begin{table*}[t]
+\centering
+\caption{Compass, GPS, and wind offset filters.}
+\label{tab:pypilot-offset-filters}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Quantity & Default/fixed value & Code range & Practical range & Meaning \\
+\midrule
+GPS speed EMA alpha &
+\num{0.002} &
+fixed &
+fixed &
+Very slow smoothing of GPS speed before GPS/compass offset updates. \\
+GPS offset speed gate &
+\(\SI{1}{kn}\) &
+fixed &
+\(\SI{1}{kn}\ldots\SI{3}{kn}\) if editing source &
+Avoids trusting GPS track at very low speed. \\
+GPS offset update alpha &
+\(0.005\log(V_{g,f}+1)\) &
+fixed &
+fixed &
+Weights GPS/compass offset update more heavily at higher speed. \\
+\texttt{ap.wind\_offset\_filter} &
+\num{0.1} &
+\(\num{0.01}\ldots\num{0.5}\) &
+\(\num{0.03}\ldots\num{0.2}\) &
+EMA alpha for apparent-wind and true-wind compass offsets. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The wind offset update has the form
+\[
+\beta_f[k]
+=
+(1-\alpha_w)\beta_f[k-1]
++
+\alpha_w \beta[k],
+\]
+where the user-facing parameter is
+\[
+\alpha_w = \texttt{ap.wind\_offset\_filter}.
+\]
+Large values adapt quickly to wind shifts but can chase wind sensor noise.
+Small values preserve a stable long-term wind/compass offset.
+\subsection{Wind Sensor Filters}
+The apparent-wind and true-wind sensor paths use both fixed and tunable
+filters.  The base wind sensor rate defaults to \(\SI{4}{Hz}\), and the
+wind speed filter is deliberately slow:
+\[
+V_{w,f}[k]
+=
+0.99\,V_{w,f}[k-1]
++
+0.01\,V_w[k].
+\]
+At \(\SI{4}{Hz}\), the approximate time constant is about
+\(\SI{25}{s}\).  This slow speed estimate is then used to weight the
+direction filter.
+\begin{table*}[t]
+\centering
+\caption{Wind and true-wind filtering parameters.}
+\label{tab:pypilot-wind-filters}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{wind.rate} &
+\(\SI{4}{Hz}\) &
+\(\SI{0}{Hz}\ldots\SI{50}{Hz}\) &
+\(\SI{2}{Hz}\ldots\SI{10}{Hz}\) &
+Requested/input apparent-wind data rate. \\
+\texttt{truewind.rate} &
+\(\SI{4}{Hz}\) &
+\(\SI{0}{Hz}\ldots\SI{50}{Hz}\) &
+\(\SI{2}{Hz}\ldots\SI{10}{Hz}\) &
+Requested/input true-wind data rate. \\
+\texttt{wind.offset} &
+\(0^\circ\) &
+\(-180^\circ\ldots180^\circ\) &
+calibrated value &
+Apparent-wind angle offset. \\
+\texttt{truewind.offset} &
+\(0^\circ\) &
+\(-180^\circ\ldots180^\circ\) &
+calibrated value &
+True-wind angle offset if true wind is externally supplied. \\
+\texttt{wind.sensors\_height} &
+\(\SI{0}{m}\) &
+\(\SI{0}{m}\ldots\SI{100}{m}\) &
+actual sensor height &
+Height used for mast-motion apparent-wind compensation. \\
+\texttt{wind.filter\_constant} &
+\num{0.1} &
+\(\num{0.01}\ldots\num{1.0}\) &
+\(\num{0.03}\ldots\num{0.25}\) &
+Base coefficient for speed-weighted wind-direction filtering. \\
+\texttt{truewind.filter\_constant} &
+\num{0.1} &
+\(\num{0.01}\ldots\num{1.0}\) &
+\(\num{0.03}\ldots\num{0.25}\) &
+Same as above for the true-wind path. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The wind-direction filter coefficient is not constant.  It is computed as
+\[
+\alpha_{\mathrm{wind}}
+=
+c_w
+\log\left(\frac{V_{w,f}}{5}+1.1\right),
+\]
+where
+\[
+c_w = \texttt{wind.filter\_constant}.
+\]
+The filtered wind direction is then updated by
+\[
+\theta_{w,f}[k]
+=
+(1-\alpha_{\mathrm{wind}})\theta_{w,f}[k-1]
++
+\alpha_{\mathrm{wind}}\theta_w[k],
+\]
+with directional wrap handled by the angle-resolution function.
+With the default \(c_w=0.1\), the effective alpha is approximately
+\cref{tab:pypilot-wind-alpha}.
+\begin{table}[h]
+\centering
+\caption{Approximate wind-direction alpha for default \texttt{filter\_constant}.}
+\label{tab:pypilot-wind-alpha}
+\begin{tabular}{cc}
+\toprule
+Filtered wind speed & Effective \(\alpha\) \\
+\midrule
+\(\SI{0}{kn}\)  & \(\num{0.0095}\) \\
+\(\SI{5}{kn}\)  & \(\num{0.074}\) \\
+\(\SI{10}{kn}\) & \(\num{0.113}\) \\
+\(\SI{20}{kn}\) & \(\num{0.163}\) \\
+\bottomrule
+\end{tabular}
+\end{table}
+Since the code does not clamp this computed alpha, large
+\texttt{filter\_constant} values can produce \(\alpha>1\) at high wind
+speed.  For robust behavior, \texttt{filter\_constant} should normally be
+kept well below \(1\).
+If \texttt{wind.sensors\_height} is nonzero, apparent-wind measurements
+are compensated using pitch and roll rates.  The source computes a mast
+motion correction approximately proportional to
+\[
+\kappa
+=
+\frac{\pi}{180}
+\cdot
+1.94
+\cdot
+h,
+\]
+where \(h\) is the sensor height in meters and the factor \(1.94\)
+converts meters per second to knots.  The apparent wind vector is adjusted
+by roll-rate and pitch-rate terms.  This should only be enabled when IMU
+alignment and sensor geometry are trusted.
+\subsection{GPS, APB, and Navigation Parameters}
+The GPS sensor defaults to \(\SI{1}{Hz}\), while the APB navigation
+interface contains the main cross-track-error gain used in NAV mode.
+\begin{table*}[t]
+\centering
+\caption{GPS and APB navigation parameters.}
+\label{tab:pypilot-gps-apb-parameters}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value/gate & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{gps.rate} &
+\(\SI{1}{Hz}\) &
+\(\SI{0}{Hz}\ldots\SI{50}{Hz}\) &
+\(\SI{1}{Hz}\ldots\SI{10}{Hz}\) &
+Requested/input GPS update rate. \\
+\texttt{apb.xte.gain} &
+\num{300} &
+\(\num{0}\ldots\num{3000}\) &
+\(\num{50}\ldots\num{600}\) &
+Cross-track-error gain used in NAV mode. \\
+APB accept interval &
+\(\SI{0.5}{s}\) &
+fixed &
+fixed &
+APB updates faster than \(\SI{2}{Hz}\) are ignored. \\
+Heading-command update threshold &
+\(0.1^\circ\) &
+fixed &
+fixed &
+NAV mode only writes a new command if it differs by more than this. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The NAV-mode command is very simple:
+\[
+\psi_c
+=
+\psi_{\mathrm{track}}
++
+K_{\mathrm{xte}}\,e_{\mathrm{xte}},
+\]
+where
+\[
+K_{\mathrm{xte}} = \texttt{apb.xte.gain}.
+\]
+The source comment states that the default value \(K_{\mathrm{xte}}=300\)
+corresponds to a \(30^\circ\) correction for \(0.1\) mile of cross-track
+error.  This is a proportional cross-track correction, not an L1 or
+pure-pursuit path-following law.
+The APB update only affects the heading command when
+\[
+\texttt{ap.mode}=\texttt{"nav"},
+\qquad
+\texttt{ap.enabled}=\texttt{true},
+\]
+and the APB data mode is accepted as GPS-derived navigation data.
+\subsection{Optional GPS Filter Parameters}
+The optional filtered GPS process is disabled by default.  It estimates
+position and velocity with a simple Kalman structure using GPS fixes and
+IMU acceleration.  It is not the normal steering loop in the inspected
+configuration.
+\begin{table}[h]
+\centering
+\caption{User-visible GPS filter values.}
+\label{tab:pypilot-gps-filter-values}
+\begin{tabularx}{\columnwidth}{lccX}
+\toprule
+Value & Default & Practical range & Meaning \\
+\midrule
+\texttt{gps.filtered.enabled} &
+\texttt{false} &
+usually \texttt{false} &
+Enables the GPS/IMU filter process. \\
+\texttt{gps.filtered.output} &
+\texttt{false} &
+usually \texttt{false} &
+Controls whether filtered GPS output is used/exported. \\
+\texttt{gps.filtered.time\_offset} &
+\(\SI{0.7}{s}\) &
+\(\SI{0.3}{s}\ldots\SI{1.5}{s}\) &
+Assumed GPS latency. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+The fixed measurement and covariance constants are summarized in
+\cref{tab:pypilot-gps-filter-fixed}.
+\begin{table}[h]
+\centering
+\caption{Fixed GPS filter constants.}
+\label{tab:pypilot-gps-filter-fixed}
+\begin{tabularx}{\columnwidth}{lcX}
+\toprule
+Constant & Value & Meaning \\
+\midrule
+Position measurement sigma &
+\(\SI{10}{m}\) &
+GPS position noise assumption. \\
+Velocity measurement sigma &
+\(\SI{0.25}{m/s}\) &
+GPS velocity noise assumption. \\
+Initial position deviation &
+\(\SI{30}{m}\) &
+Initial/process covariance scale. \\
+Initial velocity deviation &
+\(\SI{3}{m/s}\) &
+Initial/process covariance scale. \\
+3D mode &
+\texttt{false} &
+The filter runs in 2D by default. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+The GPS filter also contains several timing gates:
+\[
+\Delta t_{\mathrm{predict}} < 0
+\quad\text{or}\quad
+\Delta t_{\mathrm{predict}} > \SI{0.5}{s}
+\quad\Longrightarrow\quad
+\text{reset}.
+\]
+For normal predictions, the applied step is clamped:
+\[
+\Delta t
+\leftarrow
+\operatorname{clamp}(\Delta t,\SI{0.02}{s},\SI{0.1}{s}).
+\]
+GPS fixes older than \(\SI{5}{s}\) are considered stale; after more than
+five stale fixes, the system time offset and filter are reset.  Magnetic
+declination is refreshed from the magnetic model no more often than once
+every four hours.
+\subsection{Tacking Parameters and Gates}
+The tacking subsystem is a small state machine with states
+\[
+\texttt{none},\quad
+\texttt{begin},\quad
+\texttt{waiting},\quad
+\texttt{tacking}.
+\]
+External clients initiate a tack by setting the state to
+\texttt{begin}.  The state machine then waits for the configured delay,
+commands a turn, and finishes the tack when the configured threshold is
+crossed.
+\begin{table*}[t]
+\centering
+\caption{Tacking parameters.}
+\label{tab:pypilot-tacking-parameters}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{ap.tack.delay} &
+\(\SI{0}{s}\) &
+\(\SI{0}{s}\ldots\SI{60}{s}\) &
+\(\SI{0}{s}\ldots\SI{10}{s}\) &
+Delay between tack request and start of tack. \\
+\texttt{ap.tack.angle} &
+\(100^\circ\) &
+\(10^\circ\ldots180^\circ\) &
+\(70^\circ\ldots120^\circ\) &
+Nominal tack angle in compass mode. \\
+\texttt{ap.tack.rate} &
+\(\SI{15}{deg/s}\) &
+\(\SI{1}{deg/s}\ldots\SI{100}{deg/s}\) &
+\(\SI{5}{deg/s}\ldots\SI{25}{deg/s}\) &
+Turn-rate scaling during the tack. \\
+\texttt{ap.tack.threshold} &
+\(\SI{50}{\percent}\) &
+\(\SI{10}{\percent}\ldots\SI{100}{\percent}\) &
+\(\SI{40}{\percent}\ldots\SI{70}{\percent}\) &
+Percent completion at which the tack is considered complete. \\
+\texttt{ap.tack.use\_heel} &
+\texttt{false} &
+boolean &
+usually \texttt{false} &
+Infer tack side from heel. \\
+\texttt{ap.tack.use\_wind\_direction} &
+\texttt{true} &
+boolean &
+usually \texttt{true} &
+Infer tack side from apparent wind direction. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The tack direction detector maintains logs that are updated at most every
+\(\SI{0.25}{s}\).  If the update interval exceeds \(\SI{1}{s}\), the log
+is cleared.  The apparent-wind tack detector uses a threshold of
+\(20^\circ\), and the heel detector uses a threshold of \(7^\circ\).  Heel
+is not used immediately; the code waits more than \(\SI{30}{s}\) before
+using heel as a tack-side detector.
+During the tacking state, the command is computed from turn-rate terms:
+\[
+u_{\mathrm{tack}}
+=
+\frac{\dot{\psi}+\ddot{\psi}/2}
+{\texttt{ap.tack.rate}}
++
+d,
+\]
+where \(d\in\{-1,+1\}\) is the tack direction.  The result is clamped:
+\[
+u_{\mathrm{tack}}
+\leftarrow
+\operatorname{clamp}(u_{\mathrm{tack}},-1,+1).
+\]
+This prevents excessive command values during the tack.
+\subsection{Servo and Actuator Parameters}
+The servo layer converts the pilot's normalized command into motor drive,
+protects the actuator, handles current and temperature limits, and shapes
+small commands into practical pulses.  This layer is especially important
+because pypilot is designed to work with real DC actuators and motor
+controllers rather than idealized rudder servos.
+\subsubsection{Safety Limits}
+\begin{table*}[t]
+\centering
+\caption{Servo safety limits.}
+\label{tab:pypilot-servo-safety}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{servo.max\_current} &
+\(\SI{4.5}{A}\) &
+\(\SI{0}{A}\ldots\SI{50}{A}\) &
+drive-dependent &
+Motor current trip limit sent to the controller. \\
+\texttt{servo.max\_controller\_temp} &
+\(\SI{60}{\celsius}\) &
+\(\SI{45}{\celsius}\ldots\SI{80}{\celsius}\) &
+\(\SI{55}{\celsius}\ldots\SI{70}{\celsius}\) &
+Controller over-temperature limit. \\
+\texttt{servo.max\_motor\_temp} &
+\(\SI{60}{\celsius}\) &
+\(\SI{30}{\celsius}\ldots\SI{80}{\celsius}\) &
+\(\SI{50}{\celsius}\ldots\SI{70}{\celsius}\) &
+Motor over-temperature limit. \\
+\texttt{servo.faults} &
+\num{0} &
+resettable &
+diagnostic &
+Persistent fault counter. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The practical current limit depends on the actuator.  Small tiller pilots
+may use only a few amperes, while larger hydraulic or wheel drives can
+require much higher limits.  The Arduino controller also reports its
+current range, and the pypilot host adjusts the allowed maximum
+accordingly.
+\subsubsection{Servo Output Scaling}
+\begin{table*}[t]
+\centering
+\caption{Servo output scaling and pulse-shaping parameters.}
+\label{tab:pypilot-servo-scaling}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{servo.gain} &
+\num{1} &
+\(\num{-10}\ldots\num{10}\) &
+\(\num{0.5}\ldots\num{2}\), or \(-1\) if reversed &
+Multiplies final speed command.  Negative values reverse the drive direction. \\
+\texttt{servo.speed.min} &
+\(\SI{100}{\percent}\) &
+\(\SI{0}{\percent}\ldots\SI{100}{\percent}\) &
+\(\SI{20}{\percent}\ldots\SI{60}{\percent}\) after calibration &
+Minimum motor speed once a pulse is emitted. \\
+\texttt{servo.speed.max} &
+\(\SI{100}{\percent}\) &
+\(\SI{0}{\percent}\ldots\SI{100}{\percent}\) &
+\(\SI{70}{\percent}\ldots\SI{100}{\percent}\) &
+Maximum motor speed. \\
+\texttt{servo.speed\_gain} &
+\num{0} &
+\(\num{0}\ldots\num{1}\) &
+\(\num{0}\ldots\num{0.3}\) &
+Raises minimum speed as duty cycle increases. \\
+\texttt{servo.period} &
+\(\SI{0.4}{s}\) &
+\(\SI{0.1}{s}\ldots\SI{1.0}{s}\) &
+\(\SI{0.25}{s}\ldots\SI{0.6}{s}\) &
+Pulse/windup period used to avoid tiny actuator movements. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The source enforces
+\[
+\texttt{servo.speed.max}
+\ge
+\texttt{servo.speed.min}.
+\]
+The default \(\SI{100}{\percent}\) minimum and maximum produce a
+full-speed pulsed actuator.  After calibration, lowering the minimum speed
+can give smoother steering, but it must remain high enough to reliably
+move the actuator.
+\subsubsection{Servo Windup and Pulse Logic}
+Normal autopilot commands are not always sent directly to the motor.  The
+servo layer integrates a windup term:
+\[
+w[k]
+=
+w[k-1]
++
+\left(u[k]-u_{\mathrm{actual}}[k]\right)\Delta t .
+\]
+A motor pulse is emitted only when
+\[
+\abs{w}
+>
+\frac{T_s u_{\min}}{1.5},
+\]
+where
+\[
+T_s = \texttt{servo.period}
+\]
+and \(u_{\min}\) is the configured minimum speed.  The windup is bounded:
+\[
+\abs{w}
+\le
+1.5T_s .
+\]
+If the windup saturates, pypilot sets an internal saturation flag.
+The servo also suppresses rapid direction changes.  If the requested
+direction changes within one \texttt{servo.period}, the previous direction
+or a zero command may be retained briefly.  This protects the actuator
+from rapid reversals and prevents tiny alternating commands from wearing
+the drive.
+\subsubsection{Manual Override and Command Timeout}
+Manual commands and autopilot-generated commands are treated differently.
+External/manual writes to \texttt{servo.command} are immediate, while
+autopilot-generated calls use the period/windup logic.
+\begin{table}[h]
+\centering
+\caption{Servo command timing gates.}
+\label{tab:pypilot-servo-command-gates}
+\begin{tabularx}{\columnwidth}{lcX}
+\toprule
+Gate & Value & Meaning \\
+\midrule
+Manual override block &
+\(\SI{0.8}{s}\) &
+After an external command, pilot-generated commands are ignored for this long. \\
+Command timeout &
+\(\SI{1}{s}\) &
+A stale nonzero command is reset to zero. \\
+Zero-command resend interval &
+\(\SI{0.2}{s}\) after \(\SI{1}{s}\) &
+Avoids spamming zero commands while still keeping the link alive. \\
+Driver timeout &
+\(\SI{1}{s}\) &
+If command is nonzero but measured current remains zero, a driver-timeout flag is set. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\subsubsection{Current, Voltage, and Power Filters}
+\begin{table*}[t]
+\centering
+\caption{Servo electrical calibration and filtering.}
+\label{tab:pypilot-servo-electrical}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value/filter & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{servo.current.factor} &
+\num{1} &
+\(\num{0.8}\ldots\num{1.2}\) &
+near calibrated value &
+Current calibration multiplier. \\
+\texttt{servo.current.offset} &
+\num{0} &
+\(\num{-1.2}\ldots\num{1.2}\) &
+near calibrated value &
+Current calibration offset. \\
+\texttt{servo.voltage.factor} &
+\num{1} &
+\(\num{0.8}\ldots\num{1.2}\) &
+near calibrated value &
+Voltage calibration multiplier. \\
+\texttt{servo.voltage.offset} &
+\num{0} &
+\(\num{-1.2}\ldots\num{1.2}\) &
+near calibrated value &
+Voltage calibration offset. \\
+\texttt{servo.compensate\_voltage} &
+\texttt{false} &
+boolean &
+drive-dependent &
+If enabled, scales command approximately by \(12/V\). \\
+\texttt{servo.compensate\_current} &
+\texttt{false} &
+boolean &
+drive-dependent &
+Uses current compensation when sending controller parameters. \\
+Duty EMA alpha &
+\num{0.001} &
+fixed &
+fixed &
+Very slow estimate of actuator duty cycle. \\
+Wattage EMA coefficient &
+\(0.003\Delta t\) &
+fixed &
+fixed &
+Slow average power estimate, roughly several minutes. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+Small measured currents are suppressed using the learned noise floor:
+\[
+I < 1.2 I_{\mathrm{noise}}
+\quad\Longrightarrow\quad
+I=0.
+\]
+The current noise estimate is updated only when the command has been idle
+for more than \(\SI{3}{s}\), so that motor current is not mistaken for
+sensor noise.
+\subsubsection{Clutch, Brake, and Position PID}
+\begin{table*}[t]
+\centering
+\caption{Clutch, brake, and position-control parameters.}
+\label{tab:pypilot-servo-position}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{servo.clutch\_pwm} &
+\(\SI{100}{\percent}\) &
+\(\SI{10}{\percent}\ldots\SI{100}{\percent}\) &
+\(\SI{70}{\percent}\ldots\SI{100}{\percent}\) &
+Clutch PWM command. \\
+\texttt{servo.use\_brake} &
+\texttt{true} &
+boolean &
+drive-dependent &
+Applies brake behavior when idle. \\
+\texttt{servo.position.p} &
+\num{0.1} &
+\(\num{0.01}\ldots\num{1.0}\) &
+\(\num{0.05}\ldots\num{0.3}\) &
+Rudder-position proportional gain. \\
+\texttt{servo.position.i} &
+\num{0} &
+\(\num{0}\ldots\num{0.1}\) &
+\(\num{0}\ldots\num{0.02}\) &
+Rudder-position integral gain. \\
+\texttt{servo.position.d} &
+\num{0.01} &
+\(\num{0}\ldots\num{0.1}\) &
+\(\num{0}\ldots\num{0.03}\) &
+Rudder-position derivative/speed damping. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The position-command path filters the position error as
+\[
+e_f[k]
+=
+0.98\,e_f[k-1]
++
+0.02\,\operatorname{clamp}(e[k],-30,30).
+\]
+At the default control rate, this is a slow filter with an approximate
+time constant of \(\SI{2.5}{s}\).
+\subsection{Rudder Calibration Parameters}
+The rudder sensor model maps a raw normalized sensor reading into degrees:
+\[
+\delta_r
+=
+s r
++
+o
++
+n(r_{\min}-r)(r_{\max}-r),
+\]
+where \(r\) is the raw rudder reading, \(s\) is scale, \(o\) is offset,
+and \(n\) is nonlinearity.
+\begin{table*}[t]
+\centering
+\caption{Rudder calibration values.}
+\label{tab:pypilot-rudder-calibration}
+\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\toprule
+Value & Default & Code range & Practical range & Meaning \\
+\midrule
+\texttt{rudder.range} &
+\(45^\circ\) &
+\(10^\circ\ldots100^\circ\) &
+actual hardover angle &
+Maximum absolute rudder angle. \\
+\texttt{rudder.offset} &
+\num{0} &
+not range-limited &
+calibration result &
+Rudder zero offset. \\
+\texttt{rudder.scale} &
+\num{100} &
+not range-limited &
+calibration result &
+Raw-to-degree scale. \\
+\texttt{rudder.nonlinearity} &
+\num{0} &
+not range-limited &
+calibration result &
+Quadratic correction term. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The rudder-speed estimate is filtered by
+\[
+\dot{\delta}_{r,f}[k]
+=
+0.9\,\dot{\delta}_{r,f}[k-1]
++
+0.1\,\dot{\delta}_{r}[k].
+\]
+If the rudder update interval exceeds \(\SI{1}{s}\), the derivative
+calculation caps the interval at \(\SI{1}{s}\), preventing a long update
+gap from corrupting the speed estimate.
+\subsection{Sensor Source Selection and Timeout Gates}
+pypilot can receive the same logical sensor from multiple sources.  It
+uses a priority table where lower numbers have higher priority.
+\begin{table}[h]
+\centering
+\caption{Sensor source priorities.}
+\label{tab:pypilot-source-priority}
+\begin{tabular}{lc}
+\toprule
+Source & Priority \\
+\midrule
+\texttt{gpsd} & 1 \\
+\texttt{servo} & 1 \\
+\texttt{serial} & 2 \\
+\texttt{tcp} & 3 \\
+\texttt{signalk} & 4 \\
+\texttt{water+wind} & 5 \\
+\texttt{gps+wind} & 6 \\
+\texttt{none} & 7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+If a higher-priority source is already active, lower-priority data are
+ignored.  If two devices of the same priority provide the same sensor,
+pypilot stays with the current device rather than switching randomly.
+This prevents source flapping.
+A sensor source is dropped if no update has been received for more than
+\[
+\SI{8}{s}.
+\]
+The same \(\SI{8}{s}\) stale-value policy is used for servo temperature
+sensor values.  A reasonable source-edit range for this timeout is
+approximately \(\SI{5}{s}\) to \(\SI{15}{s}\): shorter timeouts react
+faster to failures, while longer timeouts tolerate slow or bursty sensors.
+\subsection{Mode Availability and Fallback Gates}
+The autopilot does not expose all modes at all times.  Available modes are
+constructed from the currently available sensors:
+\[
+\begin{array}{ll}
+\text{always available:} & \texttt{compass},\\
+\text{if GPS exists:} & \texttt{gps},\\
+\text{if APB/navigation exists:} & \texttt{nav},\\
+\text{if apparent wind exists:} & \texttt{wind},\\
+\text{if true wind exists:} & \texttt{true wind}.
+\end{array}
+\]
+The value
+\[
+\texttt{ap.gps\_and\_nav\_modes}
+\]
+defaults to \texttt{true} and controls whether GPS/NAV modes are exposed
+when the corresponding sensors exist.
+Fallback behavior is summarized in
+\cref{tab:pypilot-mode-fallbacks}.
+\begin{table}[h]
+\centering
+\caption{Mode fallback behavior.}
+\label{tab:pypilot-mode-fallbacks}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+Requested mode unavailable & Fallback behavior \\
+\midrule
+\texttt{nav} &
+Falls back toward \texttt{gps}, then \texttt{compass}. \\
+\texttt{gps} &
+Falls back to \texttt{compass}. \\
+\texttt{wind} &
+Falls back to \texttt{compass}. \\
+\texttt{true wind} &
+Falls back to \texttt{wind}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+The wind pilot also performs its own safety fallback: if wind input is
+lost, it switches back to the basic pilot.
+\subsection{Loop Timing Gates}
+The main control period is
+\[
+T = \frac{1}{\texttt{imu.rate}}.
+\]
+At the default \(\SI{20}{Hz}\), \(T=\SI{0.05}{s}\).  The main loop
+contains diagnostic timing gates, summarized in
+\cref{tab:pypilot-loop-timing}.
+\begin{table*}[t]
+\centering
+\caption{Main-loop timing gates.}
+\label{tab:pypilot-loop-timing}
+\begin{tabularx}{\textwidth}{lclX}
+\toprule
+Gate & Value & Tunable & Meaning \\
+\midrule
+Main loop period &
+\(1/\texttt{imu.rate}\) &
+Yes &
+Default control period is \(\SI{0.05}{s}\). \\
+IMU read attempts &
+14 &
+No &
+The loop tries multiple times to obtain an IMU reading. \\
+Sleep per failed IMU read &
+\(T/10\) &
+No &
+Small retry delay between IMU read attempts. \\
+Slow server/client warning &
+\(>T/2\) plus standby wait &
+No &
+Warns if server/client processing is slow. \\
+Slow sensor warning &
+\(>T/2\) &
+No &
+Warns if sensor polling is slow. \\
+Slow IMU warning &
+\(>2T/3\), after startup &
+No &
+Warns if IMU reading is slow. \\
+Slow autopilot warning &
+\(>T/2\) &
+No &
+Warns if control computation is slow. \\
+Slow servo warning &
+\(>T/2\), when driver exists &
+No &
+Warns if servo polling is slow. \\
+Full iteration warning &
+\(>T\), after startup and when enabled &
+No &
+Warns if the complete loop misses its control period. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+These timing gates are diagnostic rather than control gains.  They are
+useful when assessing whether a platform is fast enough to run pypilot
+reliably.
+\subsection{Disabled or Experimental Pilot Parameters}
+The source tree contains additional pilot modules that are disabled by
+default.  These include \texttt{simple}, \texttt{rate}, \texttt{gps},
+\texttt{deadzone}, \texttt{autotune}, \texttt{fuzzy}, \texttt{vmg}, and
+\texttt{learning}.  They define additional gains and parameters, but they
+should not be presented as ordinary production tuning parameters unless
+the corresponding module is explicitly enabled and tested.
+\begin{table*}[t]
+\centering
+\caption{Disabled or experimental pilot parameters.}
+\label{tab:pypilot-disabled-pilots}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+Pilot & Representative parameters & Status \\
+\midrule
+\texttt{simple} &
+\texttt{P=0.005}, \texttt{I=0}, \texttt{D=0.15} &
+Disabled \\
+\texttt{gps} &
+\texttt{P=0.003}, \texttt{D=0.1}, \texttt{DD=0.05}, \texttt{FF=0.6} &
+Disabled \\
+\texttt{rate} &
+\texttt{D=0.075}, \texttt{DD=0.075}, \texttt{FF=0.6},
+\texttt{maxturnrate=2}, \texttt{turnraterate=0.5} &
+Disabled \\
+\texttt{deadzone} &
+\texttt{deadzone=5}, plus \texttt{P}, \texttt{D}, \texttt{DD}, and
+\texttt{FF} gains &
+Disabled \\
+\texttt{vmg} &
+Heading-control gains plus VMG tables &
+Disabled/incomplete \\
+\texttt{autotune} &
+Pilot gains plus cost logic &
+Disabled/experimental \\
+\texttt{fuzzy} &
+\texttt{learningP}, \texttt{learningD}, \texttt{seastate} &
+Disabled/experimental \\
+\texttt{learning} &
+\texttt{P}, \texttt{D}, \texttt{W}, and TensorFlow Lite prediction concept &
+Disabled/experimental \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+\subsection{Practical Starting Values}
+For a typical small sailboat with a tiller or wheel drive, a conservative
+starting configuration is
+\[
+\begin{array}{ll}
+\texttt{ap.pilot} &= \texttt{"basic"},\\
+\texttt{ap.pilot.basic.P} &= \num{0.003},\\
+\texttt{ap.pilot.basic.D} &= \num{0.09},\\
+\texttt{ap.pilot.basic.DD} &= \num{0.05}\ldots\num{0.075},\\
+\texttt{ap.pilot.basic.PR} &= \num{0.005},\\
+\texttt{ap.pilot.basic.FF} &= \num{0.4}\ldots\num{0.8},\\
+\texttt{servo.period} &= \SI{0.4}{s},\\
+\texttt{servo.gain} &= \num{1},\\
+\texttt{servo.speed.min} &= \SI{40}{\percent}\ldots\SI{70}{\percent},\\
+\texttt{servo.speed.max} &= \SI{80}{\percent}\ldots\SI{100}{\percent}.
+\end{array}
+\]
+The current limit must be chosen for the actual actuator:
+\[
+\texttt{servo.max\_current}
+=
+\text{safe current limit of the drive}.
+\]
+For wind steering, a conservative starting configuration is
+\[
+\begin{array}{ll}
+\texttt{ap.pilot} &= \texttt{"wind"},\\
+\texttt{ap.pilot.wind.P} &= \num{0.003},\\
+\texttt{ap.pilot.wind.D} &= \num{0.1},\\
+\texttt{ap.pilot.wind.DD} &= \num{0.05},\\
+\texttt{ap.pilot.wind.WG} &= \num{0},\\
+\texttt{wind.filter\_constant} &= \num{0.05}\ldots\num{0.15},\\
+\texttt{ap.wind\_offset\_filter} &= \num{0.05}\ldots\num{0.15}.
+\end{array}
+\]
+For NAV/APB steering, the default cross-track gain is aggressive enough
+for many applications:
+\[
+\texttt{apb.xte.gain}
+=
+\num{100}\ldots\num{300}
+\]
+is a reasonable initial range.  Increase it only if the boat returns to
+the route line too slowly.  Decrease it if the boat snakes across the
+route.
+The most safety-critical parameters are
+\[
+\texttt{servo.max\_current},
+\quad
+\texttt{servo.max\_controller\_temp},
+\quad
+\texttt{servo.max\_motor\_temp},
+\quad
+\texttt{rudder.range},
+\quad
+\texttt{servo.speed.max},
+\quad
+\texttt{servo.use\_brake}.
+\]
+The most important steering-feel parameters are
+\[
+\texttt{ap.pilot.basic.P},
+\quad
+\texttt{ap.pilot.basic.D},
+\quad
+\texttt{ap.pilot.basic.PR},
+\quad
+\texttt{ap.pilot.basic.FF},
+\quad
+\texttt{servo.period},
+\quad
+\texttt{servo.speed.min},
+\quad
+\texttt{servo.speed.max}.
+\]
+
 \section{Conclusion}
 
 The uploaded \texttt{pypilot} source is best characterized as a practical, open, marine
