@@ -163,9 +163,40 @@
 % ------------------------------------------------------------
 % Compact floats and equations
 % ------------------------------------------------------------
-\setlength{\floatsep}{7pt plus 2pt minus 2pt}
-\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
-\setlength{\intextsep}{7pt plus 2pt minus 2pt}
+
+% Allow LaTeX to place more floats before deferring them to the end.
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.90}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.80}
+
+\renewcommand{\dbltopfraction}{0.95}
+\renewcommand{\dblfloatpagefraction}{0.80}
+
+\setcounter{topnumber}{5}
+\setcounter{bottomnumber}{5}
+\setcounter{totalnumber}{10}
+\setcounter{dbltopnumber}{5}
+
+% Normal float spacing.
+\setlength{\floatsep}{7pt plus 1pt minus 1pt}
+\setlength{\textfloatsep}{8pt plus 1pt minus 1pt}
+\setlength{\intextsep}{7pt plus 1pt minus 1pt}
+
+% Double-column float spacing.
+\setlength{\dblfloatsep}{7pt plus 1pt minus 1pt}
+\setlength{\dbltextfloatsep}{8pt plus 1pt minus 1pt}
+
+% Prevent float-only pages from spreading tables vertically.
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{7pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+
+\setlength{\@dblfptop}{0pt}
+\setlength{\@dblfpsep}{7pt}
+\setlength{\@dblfpbot}{0pt plus 1fil}
+\makeatother
 
 \AtBeginDocument{%
   \setlength{\abovedisplayskip}{6pt plus 2pt minus 2pt}%
