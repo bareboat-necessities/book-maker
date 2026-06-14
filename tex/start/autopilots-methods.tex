@@ -1347,14 +1347,14 @@ command.  In wind modes, it behaves as a wind-relative command.  The
 heading property class resolves values differently depending on whether
 the active mode contains the word \texttt{wind}.  Conceptually,
 \[
-\small
-\psi_c =
-\begin{cases}
-\operatorname{resolv}(\psi_{\mathrm{input}},180^\circ),
-& \text{compass/GPS/NAV modes},\\[4pt]
-\operatorname{resolv}(\psi_{\mathrm{input}},0^\circ),
-& \text{wind-relative modes}.
-\end{cases}
+\begin{aligned}
+\psi_c &=
+\operatorname{resolv}(\psi_{\mathrm{input}},180^\circ)
+&& \text{for compass/GPS/NAV},\\
+\psi_c &=
+\operatorname{resolv}(\psi_{\mathrm{input}},0^\circ)
+&& \text{for wind modes}.
+\end{aligned}
 \]
 The result is rounded to one decimal degree:
 \[
