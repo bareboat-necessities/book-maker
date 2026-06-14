@@ -234,11 +234,13 @@ motor, rudder, and low-cost drive handling central to the design.
 The analysis is based on the uploaded source archive \texttt{pypilot-master.zip},
 with primary attention to the files listed in \cref{tab:source-files}; project credit
 for pypilot is checked against Sean D'Epagnier's public author page \cite{pypilot-author}.
-External
+The public pypilot user manual and workbook wiki are used as the main external
+pypilot references for operating modes, commissioning, calibration, and user-facing
+configuration \cite{pypilot-user-manual,pypilot-workbook-wiki}.  Other external
 references are used only to position the design relative to other autopilot families:
 ArduPilot Rover navigation and steering-rate control, PX4 fixed-wing position control,
-OpenPlotter's description of \texttt{pypilot} modes, Fenix Autopilot's public repository
-and documentation, and B\&G descriptions of commercial sailing autopilot operation.
+Fenix Autopilot's public repository and documentation, and B\&G descriptions of
+commercial sailing autopilot operation.
 
 \begin{table}[h]
 \centering
@@ -650,12 +652,13 @@ of slow response more than it needs aggressive trajectory tracking.
 
 \section{Comparison with Commercial Marine Pilots}
 
-OpenPlotter documentation presents \texttt{pypilot} as a modular open-source marine
-autopilot supporting compass, GPS/NAV, wind, and true-wind modes, with an IMU, optional
-GPS/wind sources, motor controller, and drive hardware \cite{openplotter-pypilot}.  B\&G
-pilot materials similarly describe wind and navigation modes and manual course adjustments
-from pilot controls \cite{bg-pilot}.  B\&G sailing guidance also describes true-wind-angle
-use for gybing \cite{bg-setup}.
+The pypilot user manual and workbook present \texttt{pypilot} as a modular
+open-source marine autopilot supporting compass, GPS/NAV, wind, and true-wind
+operation, with IMU calibration, optional GPS/wind inputs, network clients, and
+motor-controller commissioning \cite{pypilot-user-manual,pypilot-workbook-wiki}.
+B\&G pilot materials similarly describe wind and navigation modes and manual course
+adjustments from pilot controls \cite{bg-pilot}.  B\&G sailing guidance also
+describes true-wind-angle use for gybing \cite{bg-setup}.
 
 The practical difference is visibility.  Commercial pilots may provide polished
 commissioning, proprietary sea-state adaptation, and integrated displays, but the actual
@@ -3283,10 +3286,17 @@ PX4 Autopilot,
 \emph{Fixed-wing Altitude/Position Controller Tuning}.  Describes TECS and NPFG in PX4 fixed-wing control.
 \url{https://docs.px4.io/main/en/config_fw/position_tuning_guide_fixedwing}
 
-\bibitem{openplotter-pypilot}
-OpenPlotter Documentation,
-\emph{Pypilot}.  Describes pypilot components and compass, GPS/NAV, wind, and true-wind modes.
-\url{https://openplotter.readthedocs.io/latest/pypilot/pypilot_app.html}
+\bibitem{pypilot-user-manual}
+pypilot.org,
+\emph{pypilot User Manual}.  User-facing reference for pypilot setup, operation, calibration,
+clients, and autopilot modes.
+\url{https://pypilot.org/doc/pypilot_user_manual/pdf/pypilot_user_manual.pdf}
+
+\bibitem{pypilot-workbook-wiki}
+pypilot project,
+\emph{Workbook Wiki}.  Community-maintained operational and commissioning notes for pypilot
+hardware, software, calibration, and integration.
+\url{https://github.com/pypilot/workbook/tree/main/wiki}
 
 \bibitem{bg-pilot}
 B\&G Sailing,
