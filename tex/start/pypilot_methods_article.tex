@@ -6,7 +6,11 @@
 \usepackage[letterpaper,margin=0.75in]{geometry}
 \usepackage{microtype}
 \usepackage{parskip}
+\usepackage{xurl}
+\usepackage{seqsplit}
 \setlength{\columnsep}{0.25in}
+\setlength{\emergencystretch}{3em}
+\sloppy
 
 % ------------------------------------------------------------
 % Core math
@@ -23,7 +27,7 @@
 
 \setmainfont{DejaVu Serif}
 \setsansfont{DejaVu Sans}
-\setmonofont{DejaVu Sans Mono}
+\setmonofont{DejaVu Sans Mono}[Scale=0.78]
 \setmathfont{Latin Modern Math}
 
 % Do NOT load amssymb, amsfonts, or bm with unicode-math.
@@ -55,10 +59,10 @@
 
 \setlength{\tabcolsep}{3.5pt}
 \renewcommand{\arraystretch}{1.08}
-\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
-\newcolumntype{Z}[1]{>{\RaggedRight\arraybackslash}p{#1}}
-\AtBeginEnvironment{tabular}{\small}
-\AtBeginEnvironment{tabularx}{\small}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash\hspace{0pt}}X}
+\newcolumntype{Z}[1]{>{\RaggedRight\arraybackslash\hspace{0pt}}p{#1}}
+\AtBeginEnvironment{tabular}{\scriptsize}
+\AtBeginEnvironment{tabularx}{\scriptsize}
 
 % ------------------------------------------------------------
 % Figures, SVG, PGF/TikZ plots
@@ -278,7 +282,7 @@ speed request than to an absolute rudder angle.
 ]
 \node[block] (imu) {IMU / RTIMU\\quaternion attitude};
 \node[block, right=of imu] (signals) {Heading, rate,\\rate-of-rate filters};
-\node[block, right=of signals] (mode) {Mode mapping\\compass/GPS/NAV/wind};
+\node[block, right=of signals] (mode) {Mode mapping\\compass/GPS/NAV\\wind};
 \node[block, right=of mode] (error) {Heading command\\and saturated error};
 \node[block, right=of error] (pilot) {Pilot law\\basic/wind/absolute};
 \node[wide, right=of pilot] (servo) {Servo layer\\pulse, current, fault, rudder};
@@ -432,10 +436,12 @@ servo windup/pulse mechanism.
 When the autopilot is enabled, the main loop computes a filtered heading-command-rate
 signal from the difference between the current and previous commands:
 \begin{equation}
-  \dot{\heading}_{\cmd,k}
-  = (1-\alpha)\dot{\heading}_{\cmd,k-1}
-    + \alpha\,\wrap(\heading_{\cmd,k}-\heading_{\cmd,k-1}),
-  \qquad \alpha \approx 0.1.
+\begin{split}
+  \dot{\heading}_{\cmd,k} ={}&
+  (1-\alpha)\dot{\heading}_{\cmd,k-1} \\
+  &+ \alpha\,\wrap(\heading_{\cmd,k}-\heading_{\cmd,k-1}), \\
+  &\alpha \approx 0.1.
+\end{split}
 \end{equation}
 For non-wind modes the sign is reversed before filtering.  This gives the controller a
 feed-forward term during user-initiated course changes or tack state transitions.  It is
@@ -602,14 +608,11 @@ proportional, integral, and derivative gains \cite{ardupilot-rate}.
 
 A compact comparison is
 \begin{align}
-\texttt{pypilot:} \quad
-& \chi_r + K_{xte}x_{te} \longrightarrow \heading_{\cmd}
-\longrightarrow u_b, \\
-\text{ArduPilot-style:} \quad
-& \text{path geometry},\ \SOG
-\longrightarrow a_y^{\cmd}
-\longrightarrow \dot{\heading}^{\cmd}
-\longrightarrow u.
+\texttt{pypilot:}\quad
+& \chi_r + K_{xte}x_{te} \to \heading_{\cmd} \to u_b, \\
+\text{ArduPilot-style:}\quad
+& \text{path} \to a_y^{\cmd}, \\
+& a_y^{\cmd} \to \dot{\heading}^{\cmd} \to u.
 \end{align}
 
 Thus \texttt{pypilot} is heading-hold centered, whereas ArduPilot Rover is path-following
@@ -813,11 +816,11 @@ v = 1000(u+1).
 \]
 Therefore,
 \[
-u=-1 \Rightarrow v=0,
-\qquad
-u=0 \Rightarrow v=1000,
-\qquad
-u=1 \Rightarrow v=2000.
+\begin{array}{lll}
+u=-1 &\Rightarrow& v=0,\\
+u=0 &\Rightarrow& v=1000,\\
+u=1 &\Rightarrow& v=2000.
+\end{array}
 \]
 The neutral command is thus not zero, but \(v=1000\).  The firmware
 rejects command values above \(2000\).  A compatible host can therefore
@@ -843,7 +846,7 @@ so the first three bytes are
 \centering
 \caption{Host-to-servo packet codes used by the pypilot Arduino motor-controller protocol.}
 \label{tab:pypilot-servo-host-codes}
-\begin{tabularx}{\textwidth}{Z{0.21\textwidth}Z{0.12\textwidth}Z{0.22\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.24\textwidth}Z{0.10\textwidth}Z{0.20\textwidth}Y}
 \toprule
 Name & Code & Payload & Purpose \\
 \midrule
@@ -1080,6 +1083,7 @@ The left side is a pypilot value name.  The right side is a JSON value.
 The whole line is not JSON; only the right-hand side is JSON.
 A compact grammar is
 \[
+\scriptsize
 \begin{aligned}
 \text{record} &::= \text{name}\; \texttt{=}\; \text{json-value}\; \texttt{\textbackslash n},\\
 \text{name} &::= \text{dotted pypilot value name},\\
@@ -1190,6 +1194,7 @@ The server replies with a line of the form
 where the right-hand side is a JSON object mapping value names to metadata
 objects.  A representative fragment is
 \[
+\scriptsize
 \begin{aligned}
 \texttt{values=\{}&
 \texttt{"ap.enabled":\{"type":"BooleanProperty","writable":true\},}\\
@@ -1273,7 +1278,7 @@ change the commanded heading.
 \centering
 \caption{Primary autopilot control values in the TCP protocol.}
 \label{tab:pypilot-autopilot-values}
-\begin{tabularx}{\textwidth}{Z{0.21\textwidth}Z{0.12\textwidth}Z{0.22\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.24\textwidth}Z{0.10\textwidth}Z{0.20\textwidth}Y}
 \toprule
 Value & Type & Example & Meaning \\
 \midrule
@@ -1328,6 +1333,7 @@ command.  In wind modes, it behaves as a wind-relative command.  The
 heading property class resolves values differently depending on whether
 the active mode contains the word \texttt{wind}.  Conceptually,
 \[
+\small
 \psi_c =
 \begin{cases}
 \operatorname{resolv}(\psi_{\mathrm{input}},180^\circ),
@@ -1385,17 +1391,17 @@ The following example shows a complete minimal interaction.  The client
 first subscribes to value metadata and a few status values, then commands
 the pilot into compass mode at \(90^\circ\), and finally engages it.
 \begin{quote}
-\ttfamily
+\scriptsize\ttfamily
 watch=\{"values":true\}\\
-watch=\{"ap.enabled":true,"ap.mode":true,"ap.heading":0.5,"ap.heading\_command":true\}\\
+watch=\{"ap.enabled":true,"ap.mode":true,\allowbreak"ap.heading":0.5,\allowbreak"ap.heading\_command":true\}\\
 ap.mode="compass"\\
 ap.heading\_command=90.0\\
 ap.enabled=true
 \end{quote}
 The server may respond with records such as
 \begin{quote}
-\ttfamily
-values=\{"ap.enabled":\{"type":"BooleanProperty","writable":true\},...\}\\
+\scriptsize\ttfamily
+values=\{"ap.enabled":\{"type":"BooleanProperty",\allowbreak"writable":true\},...\}\\
 ap.mode="compass"\\
 ap.heading\_command=90.0\\
 ap.enabled=true\\
@@ -1448,6 +1454,7 @@ clients should use the NMEA TCP server on port \texttt{20220}.
 An external client implementation only needs a line-oriented TCP parser.
 The minimum algorithm is:
 \[
+\small
 \begin{array}{ll}
 1. & \text{open a TCP connection to } \texttt{host:23322},\\
 2. & \text{send newline-terminated assignment records},\\
@@ -1537,7 +1544,7 @@ errors without requiring a large linear proportional gain.
 \centering
 \caption{Basic pilot gains.}
 \label{tab:pypilot-basic-gains}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -1610,7 +1617,7 @@ where \(g_w\) is the apparent wind-speed change used as a gust signal.
 \centering
 \caption{Wind pilot gains.}
 \label{tab:pypilot-wind-gains}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -1648,7 +1655,7 @@ because its behavior depends strongly on rudder calibration.
 \centering
 \caption{Absolute pilot gains.}
 \label{tab:pypilot-absolute-gains}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -1761,7 +1768,7 @@ choices are \(\SI{10}{Hz}\) and \(\SI{20}{Hz}\).
 \centering
 \caption{IMU and heading filter parameters.}
 \label{tab:pypilot-imu-filters}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -1868,7 +1875,7 @@ course-over-ground when the vessel is nearly stationary.
 \centering
 \caption{Compass, GPS, and wind offset filters.}
 \label{tab:pypilot-offset-filters}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Quantity & Default/fixed value & Code range & Practical range & Meaning \\
 \midrule
@@ -1927,7 +1934,7 @@ direction filter.
 \centering
 \caption{Wind and true-wind filtering parameters.}
 \label{tab:pypilot-wind-filters}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2033,7 +2040,7 @@ interface contains the main cross-track-error gain used in NAV mode.
 \centering
 \caption{GPS and APB navigation parameters.}
 \label{tab:pypilot-gps-apb-parameters}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value/gate & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2173,7 +2180,7 @@ crossed.
 \centering
 \caption{Tacking parameters.}
 \label{tab:pypilot-tacking-parameters}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2243,7 +2250,7 @@ controllers rather than idealized rudder servos.
 \centering
 \caption{Servo safety limits.}
 \label{tab:pypilot-servo-safety}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2280,7 +2287,7 @@ accordingly.
 \centering
 \caption{Servo output scaling and pulse-shaping parameters.}
 \label{tab:pypilot-servo-scaling}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2386,7 +2393,7 @@ If command is nonzero but measured current remains zero, a driver-timeout flag i
 \centering
 \caption{Servo electrical calibration and filtering.}
 \label{tab:pypilot-servo-electrical}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value/filter & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2447,7 +2454,7 @@ sensor noise.
 \centering
 \caption{Clutch, brake, and position-control parameters.}
 \label{tab:pypilot-servo-position}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2506,7 +2513,7 @@ and \(n\) is nonlinearity.
 \centering
 \caption{Rudder calibration values.}
 \label{tab:pypilot-rudder-calibration}
-\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
+\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2767,35 +2774,17 @@ is a reasonable initial range.  Increase it only if the boat returns to
 the route line too slowly.  Decrease it if the boat snakes across the
 route.
 The most safety-critical parameters are
-\[
-\texttt{servo.max\_current},
-\quad
-\texttt{servo.max\_controller\_temp},
-\quad
-\texttt{servo.max\_motor\_temp},
-\quad
-\texttt{rudder.range},
-\quad
-\texttt{servo.speed.max},
-\quad
-\texttt{servo.use\_brake}.
-\]
+\begin{quote}
+\scriptsize\ttfamily
+servo.max\_current, servo.max\_controller\_temp, servo.max\_motor\_temp,
+rudder.range, servo.speed.max, servo.use\_brake.
+\end{quote}
 The most important steering-feel parameters are
-\[
-\texttt{ap.pilot.basic.P},
-\quad
-\texttt{ap.pilot.basic.D},
-\quad
-\texttt{ap.pilot.basic.PR},
-\quad
-\texttt{ap.pilot.basic.FF},
-\quad
-\texttt{servo.period},
-\quad
-\texttt{servo.speed.min},
-\quad
-\texttt{servo.speed.max}.
-\]
+\begin{quote}
+\scriptsize\ttfamily
+ap.pilot.basic.P, ap.pilot.basic.D, ap.pilot.basic.PR, ap.pilot.basic.FF,
+servo.period, servo.speed.min, servo.speed.max.
+\end{quote}
 
 \section{Comparison with Fenix Autopilot}
 \label{sec:fenix-comparison}
@@ -3171,13 +3160,11 @@ one firmware.
 Fenix and pypilot represent two different design philosophies.
 Fenix is best understood as a self-contained embedded tiller pilot:
 \[
-\text{Arduino}
-+
-\text{ICM-20948}
-+
-\text{feedback linear actuator}
-+
-\text{NMEA/Bluetooth app}.
+\small
+\begin{gathered}
+\text{Arduino}+\text{ICM-20948}+{}\\
+\text{feedback linear actuator}+\text{NMEA/Bluetooth app}.
+\end{gathered}
 \]
 Its methods are well aligned with that hardware model.  It uses a
 position-feedback actuator, a PID heading controller, speed-adaptive gain
@@ -3187,13 +3174,11 @@ intended installation, Fenix's rudder-position approach is mechanically
 clear and practical.
 pypilot is best understood as an open marine autopilot system:
 \[
-\text{Linux autopilot process}
-+
-\text{network value server}
-+
-\text{sensor services}
-+
-\text{independent servo controller}.
+\small
+\begin{gathered}
+\text{Linux process}+\text{network value server}+{}\\
+\text{sensor services}+\text{servo controller}.
+\end{gathered}
 \]
 Its methods are more extensible and more network-oriented.  It can support
 multiple clients, remote displays, web interfaces, Signal K integration,
@@ -3201,23 +3186,24 @@ NMEA bridges, and different pilot algorithms.  Its basic active pilot is
 less conventional than Fenix's PID, but its servo controller is more
 general-purpose and more richly supervised.
 The central method difference can be summarized as
+
 \[
+\small
 \begin{array}{ll}
 \text{pypilot:} &
-\text{heading error}
-\rightarrow
-\text{normalized motor command}
-\rightarrow
+\begin{gathered}[t]
+\text{heading error}\to\text{motor command}\to{}\\
 \text{protected servo layer},
-\\[4pt]
+\end{gathered}
+\\[6pt]
 \text{Fenix:} &
-\text{heading error}
-\rightarrow
-\text{target rudder angle}
-\rightarrow
-\text{feedback linear-actuator loop}.
+\begin{gathered}[t]
+\text{heading error}\to\text{rudder angle}\to{}\\
+\text{linear-actuator loop}.
+\end{gathered}
 \end{array}
 \]
+
 For a small Arduino-only autopilot with a known potentiometer-feedback
 linear actuator, Fenix is a coherent and practical design.  For a larger
 open navigation system with network clients, mixed sensors, remote
