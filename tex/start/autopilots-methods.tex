@@ -395,7 +395,7 @@ ArduPilot Rover navigation and steering-rate control, PX4 fixed-wing position co
 Fenix Autopilot's public repository and documentation, and B\&G descriptions of
 commercial sailing autopilot operation.
 
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Important source files inspected in the uploaded tree.}
 \label{tab:source-files}
@@ -478,7 +478,7 @@ the practical active pilots are \texttt{basic}, \texttt{wind}, and \texttt{absol
 adaptive or experimental pilots are disabled or incomplete.  The default selected pilot
 is \texttt{basic}.
 
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Pilot modules and operational status in the inspected archive.}
 \label{tab:pilots}
@@ -1100,7 +1100,7 @@ indicates invalid or unavailable rudder feedback.
 The motor controller returns telemetry using the same four-byte packet
 format.  The first byte is a status code, the next two bytes form a
 little-endian value, and the fourth byte is the CRC.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Servo telemetry packet codes.}
 \label{tab:pypilot-servo-telemetry}
@@ -1140,7 +1140,7 @@ controller reboot state.
 The \texttt{FLAGS\_CODE} packet carries a 16-bit hardware-controller
 status word.  The important bits are listed in
 \cref{tab:pypilot-servo-flags}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Servo-controller hardware flags.}
 \label{tab:pypilot-servo-flags}
@@ -1219,7 +1219,7 @@ using the service type
 so that clients can discover the active pypilot host on a local network.
 The transport characteristics are summarized in
 \cref{tab:pypilot-tcp-transport}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{pypilot TCP value protocol transport.}
 \label{tab:pypilot-tcp-transport}
@@ -1270,7 +1270,7 @@ The right-hand side follows JSON conventions.  Booleans are
 \texttt{true} and \texttt{false}, strings must be quoted, and objects use
 normal JSON syntax.  Several examples are shown in
 \cref{tab:pypilot-tcp-examples}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Examples of valid pypilot TCP protocol records.}
 \label{tab:pypilot-tcp-examples}
@@ -1321,7 +1321,7 @@ then applies value-specific validation such as range checking, enum-choice
 checking, or boolean coercion.
 The main value classes are summarized in
 \cref{tab:pypilot-value-types}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Common pypilot value types exposed through the TCP protocol.}
 \label{tab:pypilot-value-types}
@@ -1391,7 +1391,7 @@ The watch period controls how the server sends updates.  A period of
 \texttt{true} means continuous or change-driven watching.  A numeric
 period means periodic updates with that period in seconds.  A value of
 \texttt{false} removes the watch.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Watch-period meanings.}
 \label{tab:pypilot-watch-periods}
@@ -1596,7 +1596,7 @@ cross-track-error data, especially in GPS and NAV modes.  It is not the
 native pypilot command/value protocol.
 The distinction is summarized in
 \cref{tab:pypilot-tcp-vs-nmea}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{pypilot command TCP versus NMEA TCP.}
 \label{tab:pypilot-tcp-vs-nmea}
@@ -1745,7 +1745,7 @@ Feed-forward from commanded heading changes.  Improves response to button pushes
 \end{table*}
 Practical symptoms and adjustments are summarized in
 \cref{tab:pypilot-basic-tuning}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Basic pilot tuning symptoms.}
 \label{tab:pypilot-basic-tuning}
@@ -1866,7 +1866,7 @@ Therefore, even if the vessel is far off course, the control law sees at
 most \(30^\circ\) of error.  This is a practical marine safety measure:
 it prevents extreme actuator commands after a sensor jump, a large
 disturbance, a tack, or a mode transition.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Heading-error and command-rate gates.}
 \label{tab:pypilot-heading-gates}
@@ -1969,7 +1969,7 @@ EMA alpha for heading acceleration. \\
 \end{table*}
 At \(\SI{20}{Hz}\), the approximate time constants are shown in
 \cref{tab:pypilot-alpha-timeconstants}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Approximate EMA time constants at \(\SI{20}{Hz}\).}
 \label{tab:pypilot-alpha-timeconstants}
@@ -2165,7 +2165,7 @@ The filtered wind direction is then updated by
 with directional wrap handled by the angle-resolution function.
 With the default \(c_w=0.1\), the effective alpha is approximately
 \cref{tab:pypilot-wind-alpha}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Approximate wind-direction alpha for default \texttt{filter\_constant}.}
 \label{tab:pypilot-wind-alpha}
@@ -2262,7 +2262,7 @@ The optional filtered GPS process is disabled by default.  It estimates
 position and velocity with a simple Kalman structure using GPS fixes and
 IMU acceleration.  It is not the normal steering loop in the inspected
 configuration.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{User-visible GPS filter values.}
 \label{tab:pypilot-gps-filter-values}
@@ -2287,7 +2287,7 @@ Assumed GPS latency. \\
 \end{table}
 The fixed measurement and covariance constants are summarized in
 \cref{tab:pypilot-gps-filter-fixed}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Fixed GPS filter constants.}
 \label{tab:pypilot-gps-filter-fixed}
@@ -2532,7 +2532,7 @@ the drive.
 Manual commands and autopilot-generated commands are treated differently.
 External/manual writes to \texttt{servo.command} are immediate, while
 autopilot-generated calls use the period/windup logic.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Servo command timing gates.}
 \label{tab:pypilot-servo-command-gates}
@@ -2721,7 +2721,7 @@ gap from corrupting the speed estimate.
 \subsection{Sensor Source Selection and Timeout Gates}
 pypilot can receive the same logical sensor from multiple sources.  It
 uses a priority table where lower numbers have higher priority.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Sensor source priorities.}
 \label{tab:pypilot-source-priority}
@@ -2772,7 +2772,7 @@ defaults to \texttt{true} and controls whether GPS/NAV modes are exposed
 when the corresponding sensors exist.
 Fallback behavior is summarized in
 \cref{tab:pypilot-mode-fallbacks}.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Mode fallback behavior.}
 \label{tab:pypilot-mode-fallbacks}
@@ -3228,7 +3228,7 @@ waypoint identifiers, but the active Fenix track-mode steering path uses
 the APB course-to-steer field as the target bearing.  In practice, this
 delegates more of the navigation calculation to the plotter or navigation
 source.
-\begin{table}[h]
+\begin{table}[!t]
 \centering
 \caption{Track-mode comparison.}
 \label{tab:pypilot-fenix-track}
