@@ -2980,13 +2980,12 @@ pushed down into the servo driver.
 The actuator strategy is one of the clearest differences.  Fenix assumes a
 linear actuator with potentiometer feedback.  The control chain is
 \[
-\text{heading error}
-\rightarrow
-\text{target rudder}
-\rightarrow
-\text{feedback actuator positioning}
-\rightarrow
-\text{PWM and direction pin}.
+\begin{aligned}
+e_\psi
+&\longrightarrow \delta_{r,c}\\
+&\longrightarrow \text{actuator position loop}\\
+&\longrightarrow \text{PWM/DIR drive}.
+\end{aligned}
 \]
 The rudder feedback signal is mapped into rudder angle using calibrated
 minimum and maximum feedback values, a center offset, and a maximum rudder
