@@ -1467,17 +1467,17 @@ clients should use the NMEA TCP server on port \texttt{20220}.
 \subsection{Implementation Notes for External Clients}
 An external client implementation only needs a line-oriented TCP parser.
 The minimum algorithm is:
-\[
-\small
-\begin{array}{ll}
-1. & \text{open a TCP connection to } \texttt{host:23322},\\
-2. & \text{send newline-terminated assignment records},\\
-3. & \text{parse incoming lines by splitting at the first } \texttt{=},\\
-4. & \text{decode the right-hand side as JSON},\\
-5. & \text{handle } \texttt{error} \text{ records separately},\\
-6. & \text{use } \texttt{watch} \text{ subscriptions for asynchronous updates}.
-\end{array}
-\]
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parskip}{0pt}
+\item Open a TCP connection to \texttt{host:23322}.
+\item Send newline-terminated assignment records.
+\item Split incoming lines at the first \texttt{=}.
+\item Decode the right side as JSON.
+\item Handle \texttt{error} records separately.
+\item Use \texttt{watch} for asynchronous updates.
+\end{enumerate}
+
 A minimal parser can be written around the following rule:
 \[
 (\text{name},\text{payload})
