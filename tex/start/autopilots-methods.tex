@@ -212,26 +212,33 @@
 
 \begin{abstract}
 This article summarizes the main algorithms found in the uploaded
-\texttt{pypilot-master} source tree and compares them with common marine and robotics
-autopilot architectures.  The active \texttt{pypilot} control path is best understood
-as a practical marine stack: quaternion attitude estimation and low-pass heading
+\texttt{pypilot-master} source tree and compares them with Fenix Autopilot and common
+marine and robotics autopilot architectures.  \texttt{pypilot}, written by
+Sean D'Epagnier as an open-source marine autopilot, Fenix Autopilot, introduced by
+Sergio Pascual as an Arduino-based DIY tiller pilot, and ArduPilot, which grew from
+Jordi Mu\~noz and Chris Anderson's late-2000s DIY Drones work into a broad community
+autopilot stack, are treated as credited reference designs.  The active
+\texttt{pypilot} control path is best understood as a practical marine stack: quaternion attitude estimation and low-pass heading
 signals, mode-dependent heading generation, a saturated heading-error controller,
 a tack override, and a motor-oriented servo layer.  The default working pilot is not
 an advanced nonlinear path follower; it is an explicit extended proportional--derivative
 heading controller with gyro-rate, rate-of-rate, square-root heading-error, and
 heading-command feed-forward terms.  Compared with ArduPilot/PX4-style stacks, its
-path-following layer is much simpler, but its motor, rudder, and low-cost drive
-handling are unusually central to the design.
+path-following layer is much simpler; compared with Fenix Autopilot, it is more
+distributed and less tied to one embedded actuator package, but both projects make
+motor, rudder, and low-cost drive handling central to the design.
 \end{abstract}
 
 \section{Scope and Reading Method}
 
 The analysis is based on the uploaded source archive \texttt{pypilot-master.zip},
-with primary attention to the files listed in \cref{tab:source-files}.  External
+with primary attention to the files listed in \cref{tab:source-files}; project credit
+for pypilot is checked against Sean D'Epagnier's public author page \cite{pypilot-author}.
+External
 references are used only to position the design relative to other autopilot families:
 ArduPilot Rover navigation and steering-rate control, PX4 fixed-wing position control,
-OpenPlotter's description of \texttt{pypilot} modes, and B\&G descriptions of commercial
-sailing autopilot operation.
+OpenPlotter's description of \texttt{pypilot} modes, Fenix Autopilot's public repository
+and documentation, and B\&G descriptions of commercial sailing autopilot operation.
 
 \begin{table}[h]
 \centering
@@ -599,6 +606,10 @@ speed, track, and position availability.
 
 \section{Comparison with ArduPilot Rover}
 
+ArduPilot began in the DIY Drones community around Jordi Mu\~noz and Chris Anderson's
+Arduino-era autopilot work and later evolved, through the ArduPilot development team and
+contributors such as Andrew ``Tridge'' Tridgell, Pat Hickey, Randy Mackay, and many
+others, into a multi-vehicle open-source autopilot project \cite{ardupilot-history}.
 ArduPilot Rover separates high-level path following from low-level steering-rate control.
 Its older navigation documentation describes the L1 controller as the highest-level
 steering controller: it accepts position targets and current speed and outputs a desired
@@ -2788,8 +2799,11 @@ servo.period, servo.speed.min, servo.speed.max.
 
 \section{Comparison with Fenix Autopilot}
 \label{sec:fenix-comparison}
-Fenix is another open-source marine autopilot, but its architecture and
-control philosophy differ substantially from pypilot.  The most important
+Fenix Autopilot is an open-source marine tiller-pilot project by Sergio Pascual
+(\texttt{spascual90}), first published publicly as an Arduino-based DIY autopilot for
+small and medium boats and documented as a self-contained tiller pilot
+\cite{fenix-repo,fenix-overview}.  Its architecture and control philosophy differ
+substantially from pypilot.  The most important
 difference is that pypilot is organized as a distributed autopilot system,
 where a Linux/Python process computes pilot commands and communicates with
 a separate servo controller, while Fenix is primarily a monolithic Arduino
@@ -3212,21 +3226,47 @@ system architecture.
 
 \section{Conclusion}
 
-The uploaded \texttt{pypilot} source is best characterized as a practical, open, marine
-heading autopilot rather than a full modern autonomous-navigation stack.  Its default
+The uploaded \texttt{pypilot} source is best characterized as Sean D'Epagnier's
+practical, open, marine heading autopilot rather than a full modern autonomous-navigation
+stack \cite{pypilot-author}.  Its default
 method is an extended PD heading controller with gyro damping, yaw-acceleration damping,
 square-root heading-error shaping, and heading-command feed-forward.  Its strongest
 engineering feature is the servo/motor layer, which treats real rudder drives as nonlinear,
 limited, fault-prone devices rather than ideal actuators.
 
-Compared with ArduPilot or PX4, \texttt{pypilot} has a much simpler guidance layer and a
-less formal state-estimation/control hierarchy.  Compared with commercial sailing pilots,
+Compared with ArduPilot, the community project rooted in Jordi Mu\~noz and Chris
+Anderson's early DIY Drones work, or PX4, \texttt{pypilot} has a much simpler guidance
+layer and a less formal state-estimation/control hierarchy.  Compared with Fenix
+Autopilot, Sergio Pascual's self-contained Arduino tiller-pilot design, \texttt{pypilot}
+is more networked and modular, while Fenix gives useful credit to the opposite embedded
+philosophy: integrating heading, actuator, calibration, and alarms in one compact unit.
+Compared with commercial sailing pilots,
 it is less polished and contains incomplete experimental code, but it is transparent,
 modifiable, and deeply oriented toward real DIY marine drives.  The most valuable next step
 is not to replace it with machine learning, but to add a stronger deterministic guidance
 layer above the existing heading and servo architecture.
 
 \begin{thebibliography}{9}
+
+\bibitem{pypilot-author}
+pypilot.org,
+\emph{Author}.  Credits Sean D'Epagnier as author and open-source marine software contributor.
+\url{https://pypilot.org/author/}
+
+\bibitem{fenix-repo}
+Sergio Pascual (\texttt{spascual90}),
+\emph{Fenix Autopilot}.  Public GitHub repository for the open-source Arduino-based DIY tiller pilot.
+\url{https://github.com/spascual90/Fenix}
+
+\bibitem{fenix-overview}
+Fenix Autopilot Documentation,
+\emph{Overview}.  Describes Fenix as a self-contained tiller pilot for tiller-steered sailboats.
+\url{https://spascual90.gitbook.io/fenix-autopilot/introduction/overview}
+
+\bibitem{ardupilot-history}
+ArduPilot Documentation,
+\emph{History of ArduPilot}.  Summarizes the project's DIY Drones origins and later community development.
+\url{https://ardupilot.org/copter/docs/common-history-of-ardupilot.html}
 
 \bibitem{ardupilot-l1}
 ArduPilot Dev Team,
