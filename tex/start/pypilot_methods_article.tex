@@ -2783,6 +2783,433 @@ The most important steering-feel parameters are
 \texttt{servo.speed.max}.
 \]
 
+\section{Comparison with Fenix Autopilot}
+\label{sec:fenix-comparison}
+Fenix is another open-source marine autopilot, but its architecture and
+control philosophy differ substantially from pypilot.  The most important
+difference is that pypilot is organized as a distributed autopilot system,
+where a Linux/Python process computes pilot commands and communicates with
+a separate servo controller, while Fenix is primarily a monolithic Arduino
+firmware that performs sensing, state management, control, calibration,
+communication, and actuator drive inside the same embedded program.
+This distinction affects almost every method in the two systems.  pypilot
+is designed around a networked value model, multiple clients, sensor
+services, and a separate protected servo layer.  Fenix is designed around a
+specific embedded tiller-pilot architecture: an Arduino, an ICM-20948 IMU
+or external heading input, a potentiometer-feedback linear actuator, and a
+serial/Bluetooth NMEA-style command interface.
+\subsection{Architectural Difference}
+The pypilot architecture separates the high-level pilot from the actuator
+controller.  The Python process computes a normalized servo command, and
+the Arduino servo controller converts that command into protected motor
+drive.  The servo controller reports current, voltage, temperature, rudder
+feedback, and fault flags through a compact binary serial protocol.
+Fenix instead combines the autopilot state machine and actuator control in
+one firmware image.  Its main control loop parses incoming NMEA and
+proprietary Fenix messages, updates heading and sensor state, computes the
+pilot command, reads rudder feedback, checks current limits, and directly
+drives the linear actuator through PWM and a direction pin.
+\begin{table*}[t]
+\centering
+\caption{System-level comparison between pypilot and Fenix.}
+\label{tab:pypilot-fenix-architecture}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+Aspect & pypilot & Fenix \\
+\midrule
+Primary platform &
+Linux/Python autopilot process, commonly on Raspberry Pi, with optional
+Arduino servo controller. &
+Arduino firmware running the complete autopilot and actuator logic. \\
+Control distribution &
+High-level pilot and low-level servo controller are separate components. &
+Heading control, rudder feedback, current protection, calibration, and
+actuator drive are integrated in one firmware. \\
+Main external interface &
+TCP value protocol, web clients, NMEA, Signal K, and serial servo link. &
+Serial/Bluetooth NMEA plus proprietary \texttt{\$PEMC} messages. \\
+Actuator assumption &
+Can drive generic motors through a servo controller; rudder feedback is
+optional for the common basic pilot. &
+Assumes a linear actuator with potentiometer feedback as a central design
+element. \\
+Configuration model &
+Network-exposed named values, profiles, and runtime-writable properties. &
+EEPROM-stored installation parameters, PID gains, and calibration values
+set through app/NMEA commissioning messages. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+\subsection{Control-Law Philosophy}
+The active pypilot basic pilot is an extended proportional--derivative
+controller.  Its output is a normalized servo command:
+\[
+u
+=
+K_P e
++
+K_D \dot{\psi}
++
+K_{DD}\ddot{\psi}
++
+K_{PR}\operatorname{sgn}(e)\sqrt{\abs{e}}
++
+K_{FF}\dot{\psi}_c .
+\]
+Here \(e\) is heading error, \(\dot{\psi}\) is heading rate,
+\(\ddot{\psi}\) is heading acceleration, and \(\dot{\psi}_c\) is command
+rate.  The active pypilot basic controller does not rely on an integral
+term.  Instead, it uses damping, command feed-forward, a square-root error
+term, and motor-side pulse shaping.
+Fenix uses a more conventional heading-error PID loop, but with important
+extensions.  It computes a target-relative heading error,
+\[
+e_\psi
+=
+\operatorname{wrap}_{[-180^\circ,180^\circ)}
+\left(
+\psi_c-\psi
+\right),
+\]
+then applies an enhanced PID controller.  The PID output is not a raw
+motor command.  It is interpreted as a target rudder position:
+\[
+e_\psi
+\longrightarrow
+\delta_{r,c}.
+\]
+A second layer then moves the linear actuator until the measured rudder
+position approaches \(\delta_{r,c}\).  This makes Fenix more explicitly a
+rudder-position autopilot, while pypilot's basic pilot is more directly a
+servo-command autopilot.
+\begin{table*}[t]
+\centering
+\caption{Control-method comparison.}
+\label{tab:pypilot-fenix-control}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+Aspect & pypilot & Fenix \\
+\midrule
+Primary controller output &
+Normalized servo/motor command. &
+Desired rudder or tiller position. \\
+Main active heading law &
+Extended PD with heading-rate, heading-acceleration, square-root error,
+and feed-forward terms. &
+PID heading controller with deadband, derivative filtering, speed-adaptive
+gain scaling, integral limiting, and anti-windup. \\
+Integral action &
+Mostly avoided in active basic and wind pilots. &
+Present in the main PID loop, but guarded by anti-windup and actuator
+state checks. \\
+Derivative action &
+Uses measured heading rate and heading rate-of-rate. &
+Uses filtered derivative of the heading-error/input signal. \\
+Small-error behavior &
+Handled by controller gains plus servo pulse/windup logic. &
+Handled by explicit heading deadband and rudder feedback deadband. \\
+Large-error behavior &
+Heading error is clamped before entering the pilot. &
+PID output is limited by maximum rudder range. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+\subsection{Speed Adaptation and Deadband}
+Fenix contains a speed-adaptive PID scaling method.  A speed factor is
+computed from the ratio between a reference speed and the current boat
+speed.  The effective gains are then adjusted approximately as
+\[
+K_{P,\mathrm{eff}} = K_P f_v,
+\qquad
+K_{I,\mathrm{eff}} = K_I f_v,
+\qquad
+K_{D,\mathrm{eff}} = \frac{K_D}{f_v}.
+\]
+Thus, when the boat is slower than its nominal reference speed, the
+controller increases proportional and integral authority.  When the boat
+is faster, proportional and integral gains are reduced and derivative
+damping becomes relatively stronger.  This is a practical attempt to keep
+rudder response more consistent across different speeds.
+Fenix also has an adaptive deadband.  In automatic deadband mode, it
+estimates the short-term variation of heading error and chooses a
+deadband between a minimum and maximum value:
+\[
+d_b
+=
+\operatorname{clamp}
+\left(
+2 \hat{\sigma}_e,
+d_{\min},
+d_{\max}
+\right).
+\]
+The default limits are approximately
+\[
+d_{\min}=0.5^\circ,
+\qquad
+d_{\max}=5^\circ .
+\]
+This deadband suppresses unnecessary PID updates near the commanded
+heading and reduces actuator hunting.
+pypilot does not use this same heading-deadband concept in its active
+basic pilot.  Instead, pypilot combines heading-error clamping with the
+servo layer's pulse accumulation, minimum movement, and direction-change
+logic.  In pypilot, much of the small-command suppression is deliberately
+pushed down into the servo driver.
+\subsection{Actuator Method}
+The actuator strategy is one of the clearest differences.  Fenix assumes a
+linear actuator with potentiometer feedback.  The control chain is
+\[
+\text{heading error}
+\rightarrow
+\text{target rudder}
+\rightarrow
+\text{feedback actuator positioning}
+\rightarrow
+\text{PWM and direction pin}.
+\]
+The rudder feedback signal is mapped into rudder angle using calibrated
+minimum and maximum feedback values, a center offset, and a maximum rudder
+range.  Fenix then drives the actuator until the measured rudder position
+is close enough to the target position.
+Fenix also adds practical actuator logic: it stops at calibrated feedback
+limits, uses a rudder-position deadband, delays direction reversals,
+ramps motor speed, and reduces speed near the target.  It can detect an
+actuator blockage using an INA260 current monitor and stop the drive when
+current exceeds the configured limit.
+pypilot's common active pilot does not require that the actuator position
+be known.  Its servo layer converts normalized motor commands into motor
+pulses and protects the drive using current, voltage, temperature, rudder
+feedback when available, driver timeout, and fault flags from the Arduino
+servo controller.  This makes pypilot more tolerant of different actuator
+types, while Fenix is more focused on a known feedback linear actuator.
+\begin{table*}[t]
+\centering
+\caption{Actuator-control comparison.}
+\label{tab:pypilot-fenix-actuator}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+Aspect & pypilot & Fenix \\
+\midrule
+Actuator command &
+Normalized motor effort sent to a servo controller. &
+Target rudder position converted to direct PWM/direction drive. \\
+Rudder feedback &
+Optional in the common basic pilot, but supported by the servo layer. &
+Central to normal operation. \\
+Low-level motor interface &
+Binary serial protocol to an Arduino servo controller. &
+Direct Arduino PWM and direction pin. \\
+Small movement handling &
+Servo-period windup, minimum speed, and pulse shaping. &
+Rudder-position deadband, restart threshold, and speed ramping. \\
+Direction reversal &
+Handled in the servo driver with motor protection logic. &
+Explicit stop/delay state before reversing actuator direction. \\
+Electrical protection &
+Current, voltage, temperature, rudder faults, driver timeout, and
+controller flags. &
+INA260 overcurrent/blockage detection plus feedback-limit protection. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+\subsection{Heading and Sensor Handling}
+Fenix uses an ICM-20948 IMU with a Mahony AHRS implementation for internal
+heading.  It can also accept external heading through NMEA heading
+messages.  When external heading is active, Fenix extrapolates heading
+between received messages using the most recent heading slope.  This helps
+keep heading continuous when external heading messages arrive at a lower
+rate than the control loop.
+pypilot is more sensor-service oriented.  Its internal IMU path, external
+sensor paths, and networked values are integrated into a larger runtime
+environment.  pypilot is therefore better suited to systems where heading,
+wind, GPS, rudder, and other values may come from multiple network or
+serial sources.
+Fenix includes validity timeouts for external heading, speed, wind, and
+APB/navigation data.  If external heading is lost while operating from
+that source, it can return to standby and raise an alarm.  pypilot has
+similar safety behavior at the system level, but the implementation is
+distributed across the sensor/value framework and autopilot mode logic.
+\subsection{Navigation and Track Mode}
+Both systems support route following, but neither implements a full modern
+path-following controller such as L1, pure pursuit, or Stanley control in
+the inspected active code.
+pypilot's NAV mode computes a heading command using a simple cross-track
+correction:
+\[
+\psi_c
+=
+\psi_{\mathrm{track}}
++
+K_{\mathrm{xte}} e_{\mathrm{xte}} .
+\]
+Thus pypilot performs its own proportional cross-track-error correction.
+Fenix instead receives APB navigation data and uses the externally
+supplied course-to-steer value:
+\[
+\psi_c = \psi_{\mathrm{CTS}} .
+\]
+The APB sentence also contains cross-track error, bearings, alarms, and
+waypoint identifiers, but the active Fenix track-mode steering path uses
+the APB course-to-steer field as the target bearing.  In practice, this
+delegates more of the navigation calculation to the plotter or navigation
+source.
+\begin{table}[h]
+\centering
+\caption{Track-mode comparison.}
+\label{tab:pypilot-fenix-track}
+\begin{tabularx}{\columnwidth}{lXX}
+\toprule
+Aspect & pypilot & Fenix \\
+\midrule
+Route input &
+APB/GPS data. &
+APB data. \\
+Internal correction &
+Track plus proportional XTE correction. &
+Uses external APB course-to-steer. \\
+Waypoint management &
+Less waypoint-state logic in the pilot. &
+Tracks active and next waypoint identifiers and requests confirmation for
+new waypoint changes. \\
+Main limitation &
+XTE law is simple. &
+Relies on external navigator for CTS quality. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\subsection{Wind Mode}
+pypilot has an active wind pilot with its own gains.  It uses heading
+error, heading-rate damping, heading-acceleration damping, and optionally
+a wind-gust term.  The wind pilot therefore has a separate steering law
+from the basic compass pilot.
+Fenix implements wind steering by continuously converting wind-angle hold
+into a target bearing.  It supports both apparent-wind and true-wind
+inputs.  If \(\theta_w\) is the current wind-relative direction and
+\(\theta_{w,c}\) is the target wind-relative direction, Fenix updates the
+course target approximately as
+\[
+\psi_c
+=
+\psi
++
+\theta_w
+-
+\theta_{w,c}.
+\]
+After this target bearing is computed, the same main heading PID loop
+drives the rudder.  This makes the wind mode simpler and more unified, but
+less specialized than pypilot's wind-specific controller.
+\subsection{Commissioning and Configuration}
+Fenix has a strong embedded commissioning model.  Installation parameters,
+PID gains, feedback calibration, IMU calibration, and EEPROM saving are
+all handled through the app and through proprietary NMEA-style
+\texttt{\$PEMC} messages.  These messages can set installation parameters,
+set PID gains, enter or exit feedback calibration, load external
+ICM-20948 calibration matrices, and save results to EEPROM.
+pypilot's commissioning is more dynamic.  Most parameters are exposed as
+named values over the TCP value protocol and can be watched or changed by
+clients.  Persistent profiles and runtime values are part of the pypilot
+server model.  The servo controller also has its own binary protocol for
+low-level motor parameters.
+\begin{table*}[t]
+\centering
+\caption{Commissioning and protocol comparison.}
+\label{tab:pypilot-fenix-protocol}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+Aspect & pypilot & Fenix \\
+\midrule
+High-level control protocol &
+TCP value protocol using \texttt{name=json} records. &
+NMEA and proprietary \texttt{\$PEMC} sentences over serial/Bluetooth. \\
+Low-level actuator protocol &
+Separate binary serial protocol to servo controller. &
+No separate servo protocol; actuator is driven directly by firmware. \\
+Parameter discovery &
+Clients can watch the \texttt{values} metadata object. &
+Parameters are requested through specific \texttt{\$PEMC} message types. \\
+Persistence &
+Profiles and persistent values in pypilot configuration. &
+EEPROM save commands for installation, PID, and calibration data. \\
+Commissioning style &
+Networked and service-oriented. &
+Embedded marine-instrument style, app/NMEA driven. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+\subsection{Safety and Alarms}
+Fenix contains explicit marine-style alarms.  It raises alarms for
+out-of-course operation, lost external heading, wind changes, and actuator
+blockage.  Off-course and wind-change alarms are delayed so that large
+deliberate turns do not immediately trigger an alarm.  Fenix also refuses
+some parameter changes unless the autopilot is in standby, which is a
+useful commissioning safety rule.
+pypilot's safety model is more distributed.  The autopilot logic handles
+mode fallbacks and sensor availability, while the servo layer handles
+motor and electrical protection.  The Arduino servo controller reports
+faults such as overcurrent, overtemperature, bad voltage, rudder limits,
+and driver status.  pypilot is therefore stronger at low-level electrical
+and motor-controller supervision, while Fenix is stronger at integrating
+linear-actuator position, calibration, and user-facing commissioning into
+one firmware.
+\subsection{Practical Interpretation}
+Fenix and pypilot represent two different design philosophies.
+Fenix is best understood as a self-contained embedded tiller pilot:
+\[
+\text{Arduino}
++
+\text{ICM-20948}
++
+\text{feedback linear actuator}
++
+\text{NMEA/Bluetooth app}.
+\]
+Its methods are well aligned with that hardware model.  It uses a
+position-feedback actuator, a PID heading controller, speed-adaptive gain
+scaling, explicit deadband, EEPROM commissioning, and direct PWM actuator
+drive.  If the actuator feedback is reliable and the boat matches the
+intended installation, Fenix's rudder-position approach is mechanically
+clear and practical.
+pypilot is best understood as an open marine autopilot system:
+\[
+\text{Linux autopilot process}
++
+\text{network value server}
++
+\text{sensor services}
++
+\text{independent servo controller}.
+\]
+Its methods are more extensible and more network-oriented.  It can support
+multiple clients, remote displays, web interfaces, Signal K integration,
+NMEA bridges, and different pilot algorithms.  Its basic active pilot is
+less conventional than Fenix's PID, but its servo controller is more
+general-purpose and more richly supervised.
+The central method difference can be summarized as
+\[
+\begin{array}{ll}
+\text{pypilot:} &
+\text{heading error}
+\rightarrow
+\text{normalized motor command}
+\rightarrow
+\text{protected servo layer},
+\\[4pt]
+\text{Fenix:} &
+\text{heading error}
+\rightarrow
+\text{target rudder angle}
+\rightarrow
+\text{feedback linear-actuator loop}.
+\end{array}
+\]
+For a small Arduino-only autopilot with a known potentiometer-feedback
+linear actuator, Fenix is a coherent and practical design.  For a larger
+open navigation system with network clients, mixed sensors, remote
+interfaces, and replaceable pilot algorithms, pypilot has the stronger
+system architecture.
+
 \section{Conclusion}
 
 The uploaded \texttt{pypilot} source is best characterized as a practical, open, marine
