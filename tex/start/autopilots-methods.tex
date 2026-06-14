@@ -2939,11 +2939,11 @@ Fenix contains a speed-adaptive PID scaling method.  A speed factor is
 computed from the ratio between a reference speed and the current boat
 speed.  The effective gains are then adjusted approximately as
 \[
-K_{P,\mathrm{eff}} = K_P f_v,
-\qquad
-K_{I,\mathrm{eff}} = K_I f_v,
-\qquad
-K_{D,\mathrm{eff}} = \frac{K_D}{f_v}.
+\begin{aligned}
+K_{P,\mathrm{eff}} &= K_P f_v,\\
+K_{I,\mathrm{eff}} &= K_I f_v,\\
+K_{D,\mathrm{eff}} &= \frac{K_D}{f_v}.
+\end{aligned}
 \]
 Thus, when the boat is slower than its nominal reference speed, the
 controller increases proportional and integral authority.  When the boat
