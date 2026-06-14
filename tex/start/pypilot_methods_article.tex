@@ -738,6 +738,268 @@ and then use a rate loop or extended heading loop to command the existing servo 
 This keeps the best part of \texttt{pypilot}---its actuator realism---while improving
 route tracking.
 
+\section{Low-Level Servo Control Protocol}
+\label{sec:servo-protocol}
+The pypilot software does not command the motor controller through a
+textual marine protocol such as NMEA~0183 or Signal~K.  The normal
+Arduino motor-controller path uses a compact binary serial protocol.
+This protocol is implemented by the host-side Arduino servo driver and
+the microcontroller firmware.  It is deliberately small: every message is
+a fixed-length packet carrying one command code, one 16-bit value, and a
+CRC byte.
+\subsection{Transport and Packet Format}
+The physical transport is UART serial.  The pypilot host probes the
+Arduino servo controller at approximately \(38400\) baud.  The Arduino
+firmware uses the usual serial byte framing, effectively \(8\)-data-bit,
+no-parity, one-stop-bit framing.  The application protocol itself is not
+stream-delimited by a start byte.  Instead, synchronization is obtained
+statistically by requiring valid CRC-protected packets.
+Each packet has exactly four bytes:
+\[
+\begin{array}{c|c|c|c}
+b_0 & b_1 & b_2 & b_3 \\
+\hline
+\text{code} & \text{value}_{\mathrm{lo}} &
+\text{value}_{\mathrm{hi}} & \operatorname{crc8}(b_0,b_1,b_2)
+\end{array}.
+\]
+The 16-bit payload is little-endian:
+\[
+v = b_1 + 256 b_2.
+\]
+The CRC is computed over the first three bytes only:
+\[
+c_0 = \mathtt{0xff},
+\qquad
+c_{k+1} =
+\operatorname{table}\!\left[c_k \oplus b_k\right],
+\qquad
+b_3 = c_3 .
+\]
+The table used in the source corresponds to a CRC-8 polynomial
+\(\mathtt{0x31}\) with initial value \(\mathtt{0xff}\).  There is no
+length field, sequence number, escaping, or acknowledgement byte.  On bad
+CRC, the firmware clears synchronization and stops the motor.  The
+controller requires multiple valid packets before accepting the stream as
+synchronized.
+\subsection{Main Motor Command}
+The most important host-to-controller packet is
+\texttt{COMMAND\_CODE}, whose command byte is
+\[
+b_0 = \mathtt{0xC7}.
+\]
+The pypilot command is a normalized scalar
+\[
+u \in [-1,1],
+\]
+where the sign selects the motor direction and the magnitude selects the
+drive effort.  The value placed into the packet is
+\[
+v = 1000(u+1).
+\]
+Therefore,
+\[
+u=-1 \Rightarrow v=0,
+\qquad
+u=0 \Rightarrow v=1000,
+\qquad
+u=1 \Rightarrow v=2000.
+\]
+The neutral command is thus not zero, but \(v=1000\).  The firmware
+rejects command values above \(2000\).  A compatible host can therefore
+send a motor command by constructing
+\[
+\begin{aligned}
+b_0 &= \mathtt{0xC7},\\
+b_1 &= v \bmod 256,\\
+b_2 &= \left\lfloor v/256 \right\rfloor,\\
+b_3 &= \operatorname{crc8}(b_0,b_1,b_2).
+\end{aligned}
+\]
+For example, the neutral command has
+\[
+v = 1000 = \mathtt{0x03E8},
+\]
+so the first three bytes are
+\[
+\mathtt{0xC7},\quad \mathtt{0xE8},\quad \mathtt{0x03}.
+\]
+\subsection{Host-to-Controller Commands}
+\begin{table*}[t]
+\centering
+\caption{Host-to-servo packet codes used by the pypilot Arduino motor-controller protocol.}
+\label{tab:pypilot-servo-host-codes}
+\begin{tabularx}{\textwidth}{llp{0.25\textwidth}X}
+\toprule
+Name & Code & Payload & Purpose \\
+\midrule
+\texttt{COMMAND\_CODE} &
+\(\mathtt{0xC7}\) &
+\(0\ldots 2000\) &
+Main motor command, with \(1000\) as neutral. \\
+\texttt{RESET\_CODE} &
+\(\mathtt{0xE7}\) &
+ignored &
+Clear overcurrent fault state. \\
+\texttt{MAX\_CURRENT\_CODE} &
+\(\mathtt{0x1E}\) &
+current limit &
+Set motor current limit, approximately in \(10\,\mathrm{mA}\) units. \\
+\texttt{MAX\_CONTROLLER\_TEMP\_CODE} &
+\(\mathtt{0xA4}\) &
+\(100T\) &
+Set controller over-temperature threshold in centi-degrees Celsius. \\
+\texttt{MAX\_MOTOR\_TEMP\_CODE} &
+\(\mathtt{0x5A}\) &
+\(100T\) &
+Set motor over-temperature threshold in centi-degrees Celsius. \\
+\texttt{RUDDER\_MIN\_CODE} &
+\(\mathtt{0x2B}\) &
+encoded rudder position &
+Set the minimum rudder stop. \\
+\texttt{RUDDER\_MAX\_CODE} &
+\(\mathtt{0x4D}\) &
+encoded rudder position &
+Set the maximum rudder stop. \\
+\texttt{REPROGRAM\_CODE} &
+\(\mathtt{0x19}\) &
+ignored &
+Enter bootloader/reprogramming mode. \\
+\texttt{DISENGAGE\_CODE} &
+\(\mathtt{0x68}\) &
+ignored &
+Stop and disengage the motor output. \\
+\texttt{MAX\_SLEW\_CODE} &
+\(\mathtt{0x71}\) &
+two 8-bit fields &
+Set fast and slow slew-rate limits. \\
+\texttt{EEPROM\_READ\_CODE} &
+\(\mathtt{0x91}\) &
+start/end address &
+Request EEPROM bytes from the controller. \\
+\texttt{EEPROM\_WRITE\_CODE} &
+\(\mathtt{0x53}\) &
+address/value byte &
+Write one byte to EEPROM. \\
+\texttt{CLUTCH\_PWM\_AND\_BRAKE\_CODE} &
+\(\mathtt{0x36}\) &
+PWM/brake byte pair &
+Set clutch PWM and brake-enable flag. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+The \texttt{DISENGAGE\_CODE} is important because the protocol is
+designed around continuous command streaming.  A command is not treated as
+a permanent latched actuator state.  If the command stream becomes invalid
+or stale, the controller is expected to stop or disengage the motor.
+\subsection{Rudder Encoding}
+Rudder feedback and rudder limits use a normalized position coordinate
+approximately in the interval
+\[
+r \in [-0.5,0.5].
+\]
+When pypilot sends a rudder stop to the controller, it encodes the
+position as
+\[
+v = 65472(r+0.5).
+\]
+The inverse decoding used for telemetry is
+\[
+r = \frac{v}{65472} - 0.5.
+\]
+The special value
+\[
+v = 65535
+\]
+indicates invalid or unavailable rudder feedback.
+\subsection{Controller-to-Host Telemetry}
+The motor controller returns telemetry using the same four-byte packet
+format.  The first byte is a status code, the next two bytes form a
+little-endian value, and the fourth byte is the CRC.
+\begin{table}[h]
+\centering
+\caption{Servo telemetry packet codes.}
+\label{tab:pypilot-servo-telemetry}
+\begin{tabularx}{\columnwidth}{llX}
+\toprule
+Name & Code & Decoding \\
+\midrule
+\texttt{CURRENT\_CODE} &
+\(\mathtt{0x1C}\) &
+\(I = v/100\) amperes. \\
+\texttt{VOLTAGE\_CODE} &
+\(\mathtt{0xB3}\) &
+\(V = v/100\) volts. \\
+\texttt{CONTROLLER\_TEMP\_CODE} &
+\(\mathtt{0xF9}\) &
+Signed \(v/100\) degrees Celsius. \\
+\texttt{MOTOR\_TEMP\_CODE} &
+\(\mathtt{0x48}\) &
+Signed \(v/100\) degrees Celsius. \\
+\texttt{RUDDER\_SENSE\_CODE} &
+\(\mathtt{0xA7}\) &
+\(r = v/65472 - 0.5\), except \(65535\) means invalid. \\
+\texttt{FLAGS\_CODE} &
+\(\mathtt{0x8F}\) &
+Raw 16-bit controller flag word. \\
+\texttt{EEPROM\_VALUE\_CODE} &
+\(\mathtt{0x9A}\) &
+EEPROM address/value byte pair. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+The telemetry schedule is asymmetric: current and rudder position are
+reported more often than temperature.  Flags are also emitted regularly
+so that the host can detect synchronization, engagement, faults, and
+controller reboot state.
+\subsection{Controller Flags}
+The \texttt{FLAGS\_CODE} packet carries a 16-bit hardware-controller
+status word.  The important bits are listed in
+\cref{tab:pypilot-servo-flags}.
+\begin{table}[h]
+\centering
+\caption{Servo-controller hardware flags.}
+\label{tab:pypilot-servo-flags}
+\begin{tabularx}{\columnwidth}{rX}
+\toprule
+Value & Meaning \\
+\midrule
+\(1\) & Serial stream synchronized. \\
+\(2\) & Over-temperature fault. \\
+\(4\) & Over-current fault. \\
+\(8\) & Motor output engaged. \\
+\(16\) & Invalid packet or CRC error observed. \\
+\(32\) & Port-side output pin fault. \\
+\(64\) & Starboard-side output pin fault. \\
+\(128\) & Bad supply-voltage fault. \\
+\(256\) & Minimum rudder limit reached. \\
+\(512\) & Maximum rudder limit reached. \\
+\(1024\) & Current-range indicator. \\
+\(2048\) & Fuse fault. \\
+\(32768\) & Controller rebooted. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+Additional flags used inside pypilot, such as driver timeout or saturated
+output, are host-side software flags.  They are not transmitted as part of
+the 16-bit Arduino status word.
+\subsection{Design Consequences}
+The protocol is intentionally minimal, but it strongly shapes the
+autopilot architecture.  The higher-level pilot computes a normalized
+actuator command, while the servo layer is responsible for protecting the
+drive electronics and motor.  This separation is important: pypilot does
+not assume an ideal rudder actuator.  Instead, it treats the motor
+controller as a guarded device with current limits, voltage checks,
+temperature limits, rudder stops, end-stop detection, and synchronization
+loss behavior.
+This makes the pypilot servo protocol closer to a robust embedded motor
+link than to a general navigation protocol.  It carries no waypoints,
+routes, wind data, or heading commands.  It carries only low-level actuator
+commands, configuration values, and motor-controller telemetry.  The
+result is a simple binary link that is easy to implement on a small
+microcontroller while still being safe enough for a continuously running
+marine autopilot actuator.
+
 \section{Conclusion}
 
 The uploaded \texttt{pypilot} source is best characterized as a practical, open, marine
