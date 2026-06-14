@@ -1,16 +1,31 @@
 \documentclass[10pt,twocolumn]{article}
 
 % ------------------------------------------------------------
-% Page layout
+% Page layout: compact two-column proceedings-style layout
 % ------------------------------------------------------------
-\usepackage[letterpaper,margin=0.75in]{geometry}
+\usepackage[
+  letterpaper,
+  top=0.75in,
+  bottom=1.0in,
+  left=0.625in,
+  right=0.625in
+]{geometry}
+
+\setlength{\columnsep}{0.25in}
+
 \usepackage{microtype}
-\usepackage{parskip}
 \usepackage{xurl}
 \usepackage{seqsplit}
-\setlength{\columnsep}{0.25in}
-\setlength{\emergencystretch}{3em}
-\sloppy
+\setlength{\emergencystretch}{2em}
+\frenchspacing
+
+% Compact paragraph style: no blank paragraph gaps.
+% Do not use the parskip package for this layout.
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0pt}
+
+% Slightly tighter line spacing.
+\linespread{0.97}
 
 % ------------------------------------------------------------
 % Core math
@@ -25,10 +40,20 @@
 \usepackage{fontspec}
 \usepackage{unicode-math}
 
-\setmainfont{DejaVu Serif}
-\setsansfont{DejaVu Sans}
+% Use Times-like fonts if available; otherwise fall back to DejaVu.
+\IfFontExistsTF{TeX Gyre Termes}
+  {\setmainfont{TeX Gyre Termes}}
+  {\setmainfont{DejaVu Serif}}
+
+\IfFontExistsTF{TeX Gyre Heros}
+  {\setsansfont{TeX Gyre Heros}}
+  {\setsansfont{DejaVu Sans}}
+
 \setmonofont{DejaVu Sans Mono}[Scale=0.78]
-\setmathfont{Latin Modern Math}
+
+\IfFontExistsTF{TeX Gyre Termes Math}
+  {\setmathfont{TeX Gyre Termes Math}}
+  {\setmathfont{Latin Modern Math}}
 
 % Do NOT load amssymb, amsfonts, or bm with unicode-math.
 % amssymb/amfonts can conflict with symbols such as \eth.
@@ -39,6 +64,54 @@
 % ------------------------------------------------------------
 \usepackage{tensor}
 \usepackage{cancel}
+
+% ------------------------------------------------------------
+% Compact section headings
+% ------------------------------------------------------------
+\usepackage{titlesec}
+
+\titleformat{\section}
+  {\normalfont\normalsize\bfseries}
+  {\thesection.}
+  {0.5em}
+  {}
+
+\titleformat{\subsection}
+  {\normalfont\normalsize\itshape}
+  {\thesubsection}
+  {0.5em}
+  {}
+
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\itshape}
+  {\thesubsubsection}
+  {0.5em}
+  {}
+
+\titlespacing*{\section}
+  {0pt}
+  {1.2ex plus 0.4ex minus 0.2ex}
+  {0.7ex}
+
+\titlespacing*{\subsection}
+  {0pt}
+  {1.0ex plus 0.3ex minus 0.2ex}
+  {0.5ex}
+
+\titlespacing*{\subsubsection}
+  {0pt}
+  {0.8ex plus 0.2ex minus 0.2ex}
+  {0.4ex}
+
+% ------------------------------------------------------------
+% Compact lists
+% ------------------------------------------------------------
+\usepackage{enumitem}
+
+\setlist{
+  nosep,
+  leftmargin=1.2em
+}
 
 % ------------------------------------------------------------
 % Tables
@@ -57,12 +130,15 @@
   exponent-product=\cdot
 }
 
-\setlength{\tabcolsep}{3.5pt}
-\renewcommand{\arraystretch}{1.08}
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.03}
+
 \newcolumntype{Y}{>{\RaggedRight\arraybackslash\hspace{0pt}}X}
 \newcolumntype{Z}[1]{>{\RaggedRight\arraybackslash\hspace{0pt}}p{#1}}
-\AtBeginEnvironment{tabular}{\scriptsize}
-\AtBeginEnvironment{tabularx}{\scriptsize}
+
+% Default table text size. Use {\scriptsize ...} locally for very wide tables.
+\AtBeginEnvironment{tabular}{\footnotesize}
+\AtBeginEnvironment{tabularx}{\footnotesize}
 
 % ------------------------------------------------------------
 % Figures, SVG, PGF/TikZ plots
@@ -85,14 +161,60 @@
 }
 
 % ------------------------------------------------------------
+% Compact floats and equations
+% ------------------------------------------------------------
+\setlength{\floatsep}{7pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{7pt plus 2pt minus 2pt}
+
+\AtBeginDocument{%
+  \setlength{\abovedisplayskip}{6pt plus 2pt minus 2pt}%
+  \setlength{\belowdisplayskip}{6pt plus 2pt minus 2pt}%
+  \setlength{\abovedisplayshortskip}{4pt plus 2pt minus 2pt}%
+  \setlength{\belowdisplayshortskip}{4pt plus 2pt minus 2pt}%
+}
+
+% ------------------------------------------------------------
 % Captions and references
 % ------------------------------------------------------------
 \usepackage{caption}
 \usepackage{subcaption}
-\captionsetup[table]{font=small}
-\captionsetup[figure]{font=small}
+
+\captionsetup{
+  font=footnotesize,
+  labelfont=bf,
+  skip=3pt
+}
+
+\captionsetup[table]{
+  position=top,
+  font=footnotesize,
+  labelfont=bf,
+  skip=3pt
+}
+
+\captionsetup[figure]{
+  font=footnotesize,
+  labelfont=bf,
+  skip=3pt
+}
+
 \usepackage[hidelinks]{hyperref}
 \usepackage[nameinlink,noabbrev]{cleveref}
+
+% ------------------------------------------------------------
+% Compact title block
+% ------------------------------------------------------------
+\usepackage{titling}
+
+\pretitle{\begin{center}\Large\bfseries}
+\posttitle{\par\end{center}\vspace{-0.8em}}
+
+\preauthor{\begin{center}\normalsize}
+\postauthor{\par\end{center}\vspace{-1.1em}}
+
+\predate{\begin{center}\normalsize}
+\postdate{\par\end{center}\vspace{-1.0em}}
 
 % ------------------------------------------------------------
 % Common math macros
@@ -204,7 +326,7 @@
 % ------------------------------------------------------------
 \title{Algorithmic Methods in Open Source Marine Autopilots}
 \author{Mikhail Grushinskiy}
-\date{\today}
+\date{} % Use \date{\today} if a date is desired.
 
 \begin{document}
 
