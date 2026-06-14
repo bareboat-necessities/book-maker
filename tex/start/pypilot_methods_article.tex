@@ -1000,6 +1000,468 @@ result is a simple binary link that is easy to implement on a small
 microcontroller while still being safe enough for a continuously running
 marine autopilot actuator.
 
+\section{TCP Command and Value Protocol}
+\label{sec:pypilot-tcp-protocol}
+In addition to the low-level Arduino servo protocol described in
+\cref{sec:servo-protocol}, pypilot exposes a higher-level TCP protocol for
+autopilot control, monitoring, configuration, and client synchronization.
+This TCP protocol is the normal interface used by pypilot clients, web
+controls, remote buttons, display panels, and external software that wants
+to command the autopilot.  It is not a binary actuator protocol.  Instead,
+it is a newline-delimited textual value protocol.
+The low-level servo protocol carries motor-drive commands such as
+``drive port'', ``drive starboard'', current limits, voltage, and rudder
+feedback.  The TCP protocol carries semantic autopilot values such as
+\texttt{ap.enabled}, \texttt{ap.mode}, \texttt{ap.heading\_command},
+\texttt{ap.heading}, and \texttt{ap.pilot}.  In other words, the TCP
+protocol talks to the autopilot state machine, while the servo protocol
+talks to the motor controller.
+\subsection{Transport}
+The pypilot server opens a TCP listener on all interfaces:
+\[
+\texttt{0.0.0.0:23322}.
+\]
+The default port is
+\[
+p_{\mathrm{tcp}} = 23322,
+\]
+although the server source allows the port to be overridden with the
+environment variable \texttt{PYPILOT\_PORT}.  The normal pypilot clients
+use port \texttt{23322}.  The server also advertises itself by Zeroconf
+using the service type
+\[
+\texttt{\_pypilot.\_tcp.local.}
+\]
+so that clients can discover the active pypilot host on a local network.
+The transport characteristics are summarized in
+\cref{tab:pypilot-tcp-transport}.
+\begin{table}[h]
+\centering
+\caption{pypilot TCP value protocol transport.}
+\label{tab:pypilot-tcp-transport}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+Field & Value \\
+\midrule
+Transport & TCP stream \\
+Default port & \texttt{23322} \\
+Bind address & \texttt{0.0.0.0} \\
+Discovery & Zeroconf, \texttt{\_pypilot.\_tcp.local.} \\
+Encoding & UTF-8/ASCII-compatible text \\
+Framing & newline-delimited records \\
+Record form & \texttt{name=json-value\textbackslash n} \\
+Security & no authentication or TLS in the protocol itself \\
+\bottomrule
+\end{tabularx}
+\end{table}
+Because the protocol has no authentication or encryption layer, it should
+be treated as a trusted-LAN interface.  Any host able to connect to the
+TCP port can attempt to modify writable autopilot values.
+\subsection{Line Grammar}
+Each protocol record is a single assignment line:
+\[
+\texttt{name=json-value\textbackslash n}.
+\]
+The left side is a pypilot value name.  The right side is a JSON value.
+The whole line is not JSON; only the right-hand side is JSON.
+A compact grammar is
+\[
+\begin{aligned}
+\text{record} &::= \text{name}\; \texttt{=}\; \text{json-value}\; \texttt{\textbackslash n},\\
+\text{name} &::= \text{dotted pypilot value name},\\
+\text{json-value} &::= \text{number} \mid \text{string} \mid \text{boolean}
+                   \mid \text{array} \mid \text{object}.
+\end{aligned}
+\]
+Thus a valid command line is
+\[
+\texttt{ap.enabled=true\textbackslash n},
+\]
+not
+\[
+\texttt{\{"ap.enabled":true\}\textbackslash n}.
+\]
+The right-hand side follows JSON conventions.  Booleans are
+\texttt{true} and \texttt{false}, strings must be quoted, and objects use
+normal JSON syntax.  Several examples are shown in
+\cref{tab:pypilot-tcp-examples}.
+\begin{table}[h]
+\centering
+\caption{Examples of valid pypilot TCP protocol records.}
+\label{tab:pypilot-tcp-examples}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+Purpose & Record \\
+\midrule
+Engage autopilot &
+\texttt{ap.enabled=true} \\
+Disengage autopilot &
+\texttt{ap.enabled=false} \\
+Set compass mode &
+\texttt{ap.mode="compass"} \\
+Set wind mode &
+\texttt{ap.mode="wind"} \\
+Set true-wind mode &
+\texttt{ap.mode="true wind"} \\
+Set heading command &
+\texttt{ap.heading\_command=123.4} \\
+Select pilot &
+\texttt{ap.pilot="basic"} \\
+Watch values &
+\texttt{watch=\{"ap.heading":0.25,"ap.enabled":true\}} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\subsection{Value Model}
+The TCP protocol is organized around named values.  Each value has a name,
+a current value, and metadata describing its type, writability,
+persistence, range, units, or choices.  Values are arranged in dotted
+namespaces.  For example,
+\[
+\texttt{ap.heading}
+\]
+is the current autopilot heading value, while
+\[
+\texttt{ap.heading\_command}
+\]
+is the commanded heading value.
+The distinction between read-only values and writable properties is
+central.  Sensor-like values, such as \texttt{ap.heading} or
+\texttt{servo.current}, are normally read-only to remote TCP clients.
+Control values, such as \texttt{ap.enabled}, \texttt{ap.mode}, and
+\texttt{ap.heading\_command}, are writable properties.  When a remote
+client sends a record for a writable value, the server validates the JSON
+syntax and forwards the assignment to the owner of that value.  The owner
+then applies value-specific validation such as range checking, enum-choice
+checking, or boolean coercion.
+The main value classes are summarized in
+\cref{tab:pypilot-value-types}.
+\begin{table}[h]
+\centering
+\caption{Common pypilot value types exposed through the TCP protocol.}
+\label{tab:pypilot-value-types}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+Type & Meaning \\
+\midrule
+\texttt{Value} &
+Generic value.  Not necessarily writable. \\
+\texttt{SensorValue} &
+Read-only or owner-updated measured value, often rounded for output. \\
+\texttt{StringValue} &
+String-valued state or diagnostic value. \\
+\texttt{BooleanProperty} &
+Writable boolean property. \\
+\texttt{RangeProperty} &
+Writable numeric property with minimum and maximum limits. \\
+\texttt{RangeSetting} &
+Writable range property with units and persistence. \\
+\texttt{EnumProperty} &
+Writable value constrained to a finite set of choices. \\
+\texttt{ResettableValue} &
+Writable resettable value, often reset by writing zero or false. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\subsection{Value Discovery}
+A client can discover the available values by watching the special value
+\texttt{values}.  The request is
+\[
+\texttt{watch=\{"values":true\}\textbackslash n}.
+\]
+The server replies with a line of the form
+\[
+\texttt{values=\{...\}\textbackslash n},
+\]
+where the right-hand side is a JSON object mapping value names to metadata
+objects.  A representative fragment is
+\[
+\begin{aligned}
+\texttt{values=\{}&
+\texttt{"ap.enabled":\{"type":"BooleanProperty","writable":true\},}\\
+&
+\texttt{"ap.mode":\{"type":"EnumProperty","writable":true,}\\
+&\quad
+\texttt{"choices":["compass","gps","nav","wind","true wind"]\},}\\
+&
+\texttt{"ap.heading\_command":\{"type":"RangeProperty",}\\
+&\quad
+\texttt{"writable":true,"min":-180,"max":360\}\}}
+\end{aligned}
+\]
+with the actual server response containing many more values.  This
+metadata mechanism allows user interfaces to construct controls
+automatically: check boxes for boolean properties, sliders for range
+properties, selectors for enum properties, and read-only displays for
+sensor values.
+\subsection{Watch Mechanism}
+The protocol is not purely request-response.  It is also a subscription
+protocol.  A client subscribes to values by writing the special
+\texttt{watch} value:
+\[
+\texttt{watch=\{"name":period\}\textbackslash n}.
+\]
+The watch period controls how the server sends updates.  A period of
+\texttt{true} means continuous or change-driven watching.  A numeric
+period means periodic updates with that period in seconds.  A value of
+\texttt{false} removes the watch.
+\begin{table}[h]
+\centering
+\caption{Watch-period meanings.}
+\label{tab:pypilot-watch-periods}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+Period & Meaning \\
+\midrule
+\texttt{true} &
+Watch continuously, equivalent internally to period \(0\). \\
+\texttt{false} &
+Unwatch the named value. \\
+\texttt{0} &
+Continuous watch. \\
+positive number &
+Periodic watch in seconds.  For example, \(0.25\) requests up to four
+updates per second. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+For example, a display that wants heading updates four times per second,
+but only wants engagement and mode updates when they change, can send
+\[
+\begin{split}
+\texttt{watch=\{}&
+\texttt{"ap.heading":0.25,}\\
+&
+\texttt{"ap.heading\_command":true,}\\
+&
+\texttt{"ap.enabled":true,}\\
+&
+\texttt{"ap.mode":true\}\textbackslash n}.
+\end{split}
+\]
+The server then emits records using the same assignment-line format:
+\[
+\begin{aligned}
+&\texttt{ap.heading=277.3000}\\
+&\texttt{ap.heading\_command=275.0}\\
+&\texttt{ap.enabled=true}\\
+&\texttt{ap.mode="compass"}.
+\end{aligned}
+\]
+Therefore, after the watch is established, the same parser can be used for
+both command responses and asynchronous updates.
+\subsection{Autopilot Control Values}
+The most important writable autopilot values are listed in
+\cref{tab:pypilot-autopilot-values}.  These are the values an external
+controller normally uses to engage the pilot, choose a steering mode, and
+change the commanded heading.
+\begin{table*}[t]
+\centering
+\caption{Primary autopilot control values in the TCP protocol.}
+\label{tab:pypilot-autopilot-values}
+\begin{tabularx}{\textwidth}{llp{0.25\textwidth}X}
+\toprule
+Value & Type & Example & Meaning \\
+\midrule
+\texttt{ap.enabled} &
+\texttt{BooleanProperty} &
+\texttt{ap.enabled=true} &
+Engage or disengage the autopilot.  \texttt{false} is standby. \\
+\texttt{ap.mode} &
+\texttt{EnumProperty} &
+\texttt{ap.mode="compass"} &
+Select heading-reference mode.  Typical choices are
+\texttt{"compass"}, \texttt{"gps"}, \texttt{"nav"},
+\texttt{"wind"}, and \texttt{"true wind"}. \\
+\texttt{ap.heading\_command} &
+\texttt{RangeProperty} &
+\texttt{ap.heading\_command=123.4} &
+Set the commanded heading or wind-relative angle.  The value is resolved
+according to the active mode and rounded internally to tenths of a degree. \\
+\texttt{ap.pilot} &
+\texttt{EnumProperty} &
+\texttt{ap.pilot="basic"} &
+Select the active pilot algorithm.  Available choices depend on the
+loaded pilot modules. \\
+\texttt{profile} &
+\texttt{Value/Property} &
+\texttt{profile="default"} &
+Select the persistent pypilot profile.  Profiled gains and settings are
+loaded from the selected profile. \\
+\texttt{profiles} &
+\texttt{Value/Property} &
+\texttt{profiles=["default","heavy"]} &
+Set or report the list of known profiles. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+A typical external controller sequence is:
+\[
+\begin{array}{ll}
+1. & \text{connect to TCP port }23322,\\
+2. & \text{watch } \texttt{values} \text{ or known status values},\\
+3. & \text{set } \texttt{ap.mode},\\
+4. & \text{set } \texttt{ap.heading\_command},\\
+5. & \text{set } \texttt{ap.enabled=true},\\
+6. & \text{adjust } \texttt{ap.heading\_command} \text{ as needed},\\
+7. & \text{set } \texttt{ap.enabled=false} \text{ to stand by.}
+\end{array}
+\]
+\subsection{Heading Command Semantics}
+The meaning of \texttt{ap.heading\_command} depends on the active mode.
+In compass, GPS, and navigation modes, it behaves as an absolute heading
+command.  In wind modes, it behaves as a wind-relative command.  The
+heading property class resolves values differently depending on whether
+the active mode contains the word \texttt{wind}.  Conceptually,
+\[
+\psi_c =
+\begin{cases}
+\operatorname{resolv}(\psi_{\mathrm{input}},180^\circ),
+& \text{compass/GPS/NAV modes},\\[4pt]
+\operatorname{resolv}(\psi_{\mathrm{input}},0^\circ),
+& \text{wind-relative modes}.
+\end{cases}
+\]
+The result is rounded to one decimal degree:
+\[
+\psi_c \leftarrow \frac{1}{10}
+\operatorname{round}(10\psi_c).
+\]
+This means a client can send normal floating-point heading commands, but
+the server-side autopilot state will use tenth-degree resolution.
+\subsection{Errors and Invalid Requests}
+Errors are also returned as assignment-style lines using the special name
+\texttt{error}.  For example, if a client tries to write an unknown value,
+the server can reply
+\[
+\texttt{error=invalid unknown value: some.name}.
+\]
+If a client tries to modify a value that exists but is not writable, the
+server can reply
+\[
+\texttt{error=some.name is not writable}.
+\]
+If a line is syntactically malformed, lacks an equals sign, or contains an
+invalid JSON right-hand side, the server reports an invalid request.  Empty
+lines are ignored.  pypilot clients use this fact as a lightweight
+keep-alive mechanism: after a quiet period, a client may send a blank
+newline to make a broken TCP connection fail promptly.
+\subsection{Optional UDP Output Stream}
+The TCP protocol contains one special value for enabling UDP delivery of
+watched output:
+\[
+\texttt{udp\_port=<port>}.
+\]
+After a TCP client sets \texttt{udp\_port} to a valid UDP port, the server
+may deliver watched value updates to that UDP port on the same client IP
+address.  The UDP datagram payload is still the same newline-delimited
+text format:
+\[
+\begin{aligned}
+&\texttt{ap.heading=123.4000}\\
+&\texttt{ap.enabled=true}.
+\end{aligned}
+\]
+The TCP connection remains the control channel.  UDP is an optimization
+for watched output streams, especially small displays or remotes that want
+fresh sensor values without accumulating TCP latency.  The watch
+subscription itself is still configured with TCP records.
+\subsection{Example Session}
+The following example shows a complete minimal interaction.  The client
+first subscribes to value metadata and a few status values, then commands
+the pilot into compass mode at \(90^\circ\), and finally engages it.
+\begin{quote}
+\ttfamily
+watch=\{"values":true\}\\
+watch=\{"ap.enabled":true,"ap.mode":true,"ap.heading":0.5,"ap.heading\_command":true\}\\
+ap.mode="compass"\\
+ap.heading\_command=90.0\\
+ap.enabled=true
+\end{quote}
+The server may respond with records such as
+\begin{quote}
+\ttfamily
+values=\{"ap.enabled":\{"type":"BooleanProperty","writable":true\},...\}\\
+ap.mode="compass"\\
+ap.heading\_command=90.0\\
+ap.enabled=true\\
+ap.heading=88.7000\\
+ap.heading=88.9000
+\end{quote}
+To stand by, the client sends
+\begin{quote}
+\ttfamily
+ap.enabled=false
+\end{quote}
+\subsection{Comparison with the NMEA TCP Server}
+pypilot also contains a separate NMEA TCP interface, normally on port
+\[
+p_{\mathrm{nmea}} = 20220.
+\]
+That port carries ordinary NMEA sentences such as GPS, wind, rudder, and
+APB/navigation data:
+\[
+\texttt{\$...*hh\textbackslash r\textbackslash n}.
+\]
+The NMEA TCP server is therefore a marine-data interface.  It can
+influence the autopilot indirectly by supplying GPS, wind, or APB
+cross-track-error data, especially in GPS and NAV modes.  It is not the
+native pypilot command/value protocol.
+The distinction is summarized in
+\cref{tab:pypilot-tcp-vs-nmea}.
+\begin{table}[h]
+\centering
+\caption{pypilot command TCP versus NMEA TCP.}
+\label{tab:pypilot-tcp-vs-nmea}
+\begin{tabularx}{\columnwidth}{lXX}
+\toprule
+Field & pypilot TCP & NMEA TCP \\
+\midrule
+Default port & \texttt{23322} & \texttt{20220} \\
+Record type & \texttt{name=json} & NMEA sentence \\
+Primary use & Control/status/config & Marine sensor/navigation data \\
+Command example & \texttt{ap.enabled=true} & APB/RMC/MWV sentence \\
+Framing & \texttt{\textbackslash n} & \texttt{\textbackslash r\textbackslash n} \\
+Self-description & \texttt{values} metadata & none \\
+Subscriptions & \texttt{watch=\{...\}} & not native \\
+\bottomrule
+\end{tabularx}
+\end{table}
+For direct autopilot control, clients should use the pypilot TCP value
+protocol on port \texttt{23322}.  For navigation and sensor sentences,
+clients should use the NMEA TCP server on port \texttt{20220}.
+\subsection{Implementation Notes for External Clients}
+An external client implementation only needs a line-oriented TCP parser.
+The minimum algorithm is:
+\[
+\begin{array}{ll}
+1. & \text{open a TCP connection to } \texttt{host:23322},\\
+2. & \text{send newline-terminated assignment records},\\
+3. & \text{parse incoming lines by splitting at the first } \texttt{=},\\
+4. & \text{decode the right-hand side as JSON},\\
+5. & \text{handle } \texttt{error} \text{ records separately},\\
+6. & \text{use } \texttt{watch} \text{ subscriptions for asynchronous updates}.
+\end{array}
+\]
+A minimal parser can be written around the following rule:
+\[
+(\text{name},\text{payload})
+=
+\operatorname{split}_{1}(\text{line},\texttt{=}).
+\]
+Then
+\[
+\text{value} = \operatorname{JSONDecode}(\text{payload}).
+\]
+If \(\text{name}=\texttt{error}\), the payload should be treated as a
+diagnostic string rather than a normal value update.
+Because updates are asynchronous, a client should not assume that the next
+line received is a direct response to the last command sent.  After watches
+are installed, any watched value can be emitted whenever its watch policy
+allows it.  The protocol is therefore best understood as a shared
+publish/subscribe value bus with writable properties, rather than as a
+strict request-response API.
+
 \section{Conclusion}
 
 The uploaded \texttt{pypilot} source is best characterized as a practical, open, marine
