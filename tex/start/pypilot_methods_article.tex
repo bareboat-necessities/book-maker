@@ -44,6 +44,8 @@
 \usepackage{tabularx}
 \usepackage{multirow}
 \usepackage{siunitx}
+\usepackage{ragged2e}
+\usepackage{etoolbox}
 
 \sisetup{
   detect-all,
@@ -51,10 +53,18 @@
   exponent-product=\cdot
 }
 
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.08}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\newcolumntype{Z}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\AtBeginEnvironment{tabular}{\small}
+\AtBeginEnvironment{tabularx}{\small}
+
 % ------------------------------------------------------------
 % Figures, SVG, PGF/TikZ plots
 % ------------------------------------------------------------
 \usepackage{graphicx}
+\usepackage{adjustbox}
 \usepackage{svg}
 \usepackage{tikz}
 \usepackage{pgfplots}
@@ -75,6 +85,8 @@
 % ------------------------------------------------------------
 \usepackage{caption}
 \usepackage{subcaption}
+\captionsetup[table]{font=small}
+\captionsetup[figure]{font=small}
 \usepackage[hidelinks]{hyperref}
 \usepackage[nameinlink,noabbrev]{cleveref}
 
@@ -221,7 +233,7 @@ sailing autopilot operation.
 \centering
 \caption{Important source files inspected in the uploaded tree.}
 \label{tab:source-files}
-\begin{tabularx}{\columnwidth}{@{}lX@{}}
+\begin{tabularx}{\columnwidth}{@{}Z{0.34\columnwidth}Y@{}}
 \toprule
 File & Algorithmic role \\
 \midrule
@@ -257,6 +269,7 @@ speed request than to an absolute rudder angle.
 
 \begin{figure*}[t]
 \centering
+\begin{adjustbox}{max width=\textwidth}
 \begin{tikzpicture}[
   node distance=0.45cm and 0.65cm,
   block/.style={draw, rounded corners, align=center, minimum height=0.82cm, text width=2.75cm},
@@ -285,6 +298,7 @@ speed request than to an absolute rudder angle.
 \node[block, above=0.9cm of mode] (nmea) {GPS, APB, wind,\\water speed};
 \draw[arrow] (nmea) -- (mode);
 \end{tikzpicture}
+\end{adjustbox}
 \caption{Conceptual \texttt{pypilot} control stack in the uploaded source.}
 \label{fig:pypilot-stack}
 \end{figure*}
@@ -302,7 +316,7 @@ is \texttt{basic}.
 \centering
 \caption{Pilot modules and operational status in the inspected archive.}
 \label{tab:pilots}
-\begin{tabularx}{\columnwidth}{@{}lclX@{}}
+\begin{tabularx}{\columnwidth}{@{}Z{0.19\columnwidth}cZ{0.24\columnwidth}Y@{}}
 \toprule
 Pilot & Active & Class & Main idea \\
 \midrule
@@ -829,7 +843,7 @@ so the first three bytes are
 \centering
 \caption{Host-to-servo packet codes used by the pypilot Arduino motor-controller protocol.}
 \label{tab:pypilot-servo-host-codes}
-\begin{tabularx}{\textwidth}{llp{0.25\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.21\textwidth}Z{0.12\textwidth}Z{0.22\textwidth}Y}
 \toprule
 Name & Code & Payload & Purpose \\
 \midrule
@@ -920,7 +934,7 @@ little-endian value, and the fourth byte is the CRC.
 \centering
 \caption{Servo telemetry packet codes.}
 \label{tab:pypilot-servo-telemetry}
-\begin{tabularx}{\columnwidth}{llX}
+\begin{tabularx}{\columnwidth}{Z{0.42\columnwidth}Z{0.17\columnwidth}Y}
 \toprule
 Name & Code & Decoding \\
 \midrule
@@ -960,7 +974,7 @@ status word.  The important bits are listed in
 \centering
 \caption{Servo-controller hardware flags.}
 \label{tab:pypilot-servo-flags}
-\begin{tabularx}{\columnwidth}{rX}
+\begin{tabularx}{\columnwidth}{Z{0.16\columnwidth}Y}
 \toprule
 Value & Meaning \\
 \midrule
@@ -1039,7 +1053,7 @@ The transport characteristics are summarized in
 \centering
 \caption{pypilot TCP value protocol transport.}
 \label{tab:pypilot-tcp-transport}
-\begin{tabularx}{\columnwidth}{lX}
+\begin{tabularx}{\columnwidth}{Z{0.36\columnwidth}Y}
 \toprule
 Field & Value \\
 \midrule
@@ -1089,7 +1103,7 @@ normal JSON syntax.  Several examples are shown in
 \centering
 \caption{Examples of valid pypilot TCP protocol records.}
 \label{tab:pypilot-tcp-examples}
-\begin{tabularx}{\columnwidth}{lX}
+\begin{tabularx}{\columnwidth}{Z{0.36\columnwidth}Y}
 \toprule
 Purpose & Record \\
 \midrule
@@ -1140,7 +1154,7 @@ The main value classes are summarized in
 \centering
 \caption{Common pypilot value types exposed through the TCP protocol.}
 \label{tab:pypilot-value-types}
-\begin{tabularx}{\columnwidth}{lX}
+\begin{tabularx}{\columnwidth}{Z{0.36\columnwidth}Y}
 \toprule
 Type & Meaning \\
 \midrule
@@ -1209,7 +1223,7 @@ period means periodic updates with that period in seconds.  A value of
 \centering
 \caption{Watch-period meanings.}
 \label{tab:pypilot-watch-periods}
-\begin{tabularx}{\columnwidth}{lX}
+\begin{tabularx}{\columnwidth}{Z{0.36\columnwidth}Y}
 \toprule
 Period & Meaning \\
 \midrule
@@ -1259,7 +1273,7 @@ change the commanded heading.
 \centering
 \caption{Primary autopilot control values in the TCP protocol.}
 \label{tab:pypilot-autopilot-values}
-\begin{tabularx}{\textwidth}{llp{0.25\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.21\textwidth}Z{0.12\textwidth}Z{0.22\textwidth}Y}
 \toprule
 Value & Type & Example & Meaning \\
 \midrule
@@ -1413,7 +1427,7 @@ The distinction is summarized in
 \centering
 \caption{pypilot command TCP versus NMEA TCP.}
 \label{tab:pypilot-tcp-vs-nmea}
-\begin{tabularx}{\columnwidth}{lXX}
+\begin{tabularx}{\columnwidth}{Z{0.20\columnwidth}YY}
 \toprule
 Field & pypilot TCP & NMEA TCP \\
 \midrule
@@ -1523,7 +1537,7 @@ errors without requiring a large linear proportional gain.
 \centering
 \caption{Basic pilot gains.}
 \label{tab:pypilot-basic-gains}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -1561,7 +1575,7 @@ Practical symptoms and adjustments are summarized in
 \centering
 \caption{Basic pilot tuning symptoms.}
 \label{tab:pypilot-basic-tuning}
-\begin{tabularx}{\columnwidth}{lX}
+\begin{tabularx}{\columnwidth}{Z{0.36\columnwidth}Y}
 \toprule
 Observed behavior & Likely adjustment \\
 \midrule
@@ -1596,7 +1610,7 @@ where \(g_w\) is the apparent wind-speed change used as a gust signal.
 \centering
 \caption{Wind pilot gains.}
 \label{tab:pypilot-wind-gains}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -1634,7 +1648,7 @@ because its behavior depends strongly on rudder calibration.
 \centering
 \caption{Absolute pilot gains.}
 \label{tab:pypilot-absolute-gains}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -1682,7 +1696,7 @@ disturbance, a tack, or a mode transition.
 \centering
 \caption{Heading-error and command-rate gates.}
 \label{tab:pypilot-heading-gates}
-\begin{tabularx}{\columnwidth}{lclX}
+\begin{tabularx}{\columnwidth}{Z{0.26\columnwidth}cZ{0.14\columnwidth}Y}
 \toprule
 Gate/filter & Value & Tunable & Meaning \\
 \midrule
@@ -1747,7 +1761,7 @@ choices are \(\SI{10}{Hz}\) and \(\SI{20}{Hz}\).
 \centering
 \caption{IMU and heading filter parameters.}
 \label{tab:pypilot-imu-filters}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -1854,7 +1868,7 @@ course-over-ground when the vessel is nearly stationary.
 \centering
 \caption{Compass, GPS, and wind offset filters.}
 \label{tab:pypilot-offset-filters}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Quantity & Default/fixed value & Code range & Practical range & Meaning \\
 \midrule
@@ -1913,7 +1927,7 @@ direction filter.
 \centering
 \caption{Wind and true-wind filtering parameters.}
 \label{tab:pypilot-wind-filters}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2019,7 +2033,7 @@ interface contains the main cross-track-error gain used in NAV mode.
 \centering
 \caption{GPS and APB navigation parameters.}
 \label{tab:pypilot-gps-apb-parameters}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value/gate & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2078,7 +2092,7 @@ configuration.
 \centering
 \caption{User-visible GPS filter values.}
 \label{tab:pypilot-gps-filter-values}
-\begin{tabularx}{\columnwidth}{lccX}
+\begin{tabularx}{\columnwidth}{Z{0.35\columnwidth}ccY}
 \toprule
 Value & Default & Practical range & Meaning \\
 \midrule
@@ -2103,7 +2117,7 @@ The fixed measurement and covariance constants are summarized in
 \centering
 \caption{Fixed GPS filter constants.}
 \label{tab:pypilot-gps-filter-fixed}
-\begin{tabularx}{\columnwidth}{lcX}
+\begin{tabularx}{\columnwidth}{Z{0.33\columnwidth}cY}
 \toprule
 Constant & Value & Meaning \\
 \midrule
@@ -2159,7 +2173,7 @@ crossed.
 \centering
 \caption{Tacking parameters.}
 \label{tab:pypilot-tacking-parameters}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2229,7 +2243,7 @@ controllers rather than idealized rudder servos.
 \centering
 \caption{Servo safety limits.}
 \label{tab:pypilot-servo-safety}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2266,7 +2280,7 @@ accordingly.
 \centering
 \caption{Servo output scaling and pulse-shaping parameters.}
 \label{tab:pypilot-servo-scaling}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2348,7 +2362,7 @@ autopilot-generated calls use the period/windup logic.
 \centering
 \caption{Servo command timing gates.}
 \label{tab:pypilot-servo-command-gates}
-\begin{tabularx}{\columnwidth}{lcX}
+\begin{tabularx}{\columnwidth}{Z{0.33\columnwidth}cY}
 \toprule
 Gate & Value & Meaning \\
 \midrule
@@ -2372,7 +2386,7 @@ If command is nonzero but measured current remains zero, a driver-timeout flag i
 \centering
 \caption{Servo electrical calibration and filtering.}
 \label{tab:pypilot-servo-electrical}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value/filter & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2433,7 +2447,7 @@ sensor noise.
 \centering
 \caption{Clutch, brake, and position-control parameters.}
 \label{tab:pypilot-servo-position}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2492,7 +2506,7 @@ and \(n\) is nonlinearity.
 \centering
 \caption{Rudder calibration values.}
 \label{tab:pypilot-rudder-calibration}
-\begin{tabularx}{\textwidth}{lccp{0.18\textwidth}X}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}ccZ{0.18\textwidth}Y}
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
@@ -2588,7 +2602,7 @@ Fallback behavior is summarized in
 \centering
 \caption{Mode fallback behavior.}
 \label{tab:pypilot-mode-fallbacks}
-\begin{tabularx}{\columnwidth}{lX}
+\begin{tabularx}{\columnwidth}{Z{0.36\columnwidth}Y}
 \toprule
 Requested mode unavailable & Fallback behavior \\
 \midrule
@@ -2617,7 +2631,7 @@ contains diagnostic timing gates, summarized in
 \centering
 \caption{Main-loop timing gates.}
 \label{tab:pypilot-loop-timing}
-\begin{tabularx}{\textwidth}{lclX}
+\begin{tabularx}{\textwidth}{Z{0.25\textwidth}cZ{0.12\textwidth}Y}
 \toprule
 Gate & Value & Tunable & Meaning \\
 \midrule
@@ -2674,7 +2688,7 @@ the corresponding module is explicitly enabled and tested.
 \centering
 \caption{Disabled or experimental pilot parameters.}
 \label{tab:pypilot-disabled-pilots}
-\begin{tabularx}{\textwidth}{lXl}
+\begin{tabularx}{\textwidth}{Z{0.16\textwidth}YZ{0.16\textwidth}}
 \toprule
 Pilot & Representative parameters & Status \\
 \midrule
@@ -2813,7 +2827,7 @@ drives the linear actuator through PWM and a direction pin.
 \centering
 \caption{System-level comparison between pypilot and Fenix.}
 \label{tab:pypilot-fenix-architecture}
-\begin{tabularx}{\textwidth}{lXX}
+\begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
 \toprule
 Aspect & pypilot & Fenix \\
 \midrule
@@ -2886,7 +2900,7 @@ servo-command autopilot.
 \centering
 \caption{Control-method comparison.}
 \label{tab:pypilot-fenix-control}
-\begin{tabularx}{\textwidth}{lXX}
+\begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
 \toprule
 Aspect & pypilot & Fenix \\
 \midrule
@@ -2987,7 +3001,7 @@ types, while Fenix is more focused on a known feedback linear actuator.
 \centering
 \caption{Actuator-control comparison.}
 \label{tab:pypilot-fenix-actuator}
-\begin{tabularx}{\textwidth}{lXX}
+\begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
 \toprule
 Aspect & pypilot & Fenix \\
 \midrule
@@ -3058,7 +3072,7 @@ source.
 \centering
 \caption{Track-mode comparison.}
 \label{tab:pypilot-fenix-track}
-\begin{tabularx}{\columnwidth}{lXX}
+\begin{tabularx}{\columnwidth}{Z{0.20\columnwidth}YY}
 \toprule
 Aspect & pypilot & Fenix \\
 \midrule
@@ -3116,7 +3130,7 @@ low-level motor parameters.
 \centering
 \caption{Commissioning and protocol comparison.}
 \label{tab:pypilot-fenix-protocol}
-\begin{tabularx}{\textwidth}{lXX}
+\begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
 \toprule
 Aspect & pypilot & Fenix \\
 \midrule
