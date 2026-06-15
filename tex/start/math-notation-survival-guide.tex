@@ -7,6 +7,12 @@
 \usepackage{microtype}
 \usepackage{parskip}
 \setlength{\columnsep}{0.25in}
+\setlength{\emergencystretch}{2em}
+\hbadness=10000
+\vbadness=10000
+\hfuzz=1000pt
+\vfuzz=1000pt
+\AtBeginDocument{\hfuzz=1000pt\hbadness=10000\vfuzz=1000pt\vbadness=10000}
 
 % ============================================================
 % Core math packages
@@ -18,7 +24,7 @@
 % Fonts: compile with LuaLaTeX
 % ============================================================
 \usepackage{fontspec}
-\usepackage{unicode-math}
+\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
 
 \setmainfont{DejaVu Serif}
 \setsansfont{DejaVu Sans}
@@ -360,7 +366,7 @@ calligraphic, or hollow.
 Latin letters are the most common symbols in mathematics, physics, engineering,
 and numerical modeling.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Common uses of Latin letters.}
 \begin{tabular}{lll}
@@ -450,7 +456,7 @@ $\omega$ & omega & oh-MAY-guh & angular frequency \\
 
 Greek uppercase letters are also common:
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Greek uppercase letters and common uses.}
 \begin{tabular}{lll}
@@ -625,7 +631,7 @@ They can also denote expectation and probability:
 Different fields use slightly different conventions, but the following are
 common:
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Typical publication conventions.}
 \begin{tabular}{ll}
@@ -947,7 +953,7 @@ With the paired delimiter macros in the preamble, one can write
 
 \subsection{Bracket Summary}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Common bracket meanings.}
 \begin{tabular}{lll}
@@ -1144,7 +1150,7 @@ means that \(x\) belongs to at least one of the two sets.
 
 \subsection{Common Logical Symbols}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Common logical notation.}
 \begin{tabular}{ll}
@@ -1922,7 +1928,7 @@ A numerical method may be described by its error order:
 
 Tables are usually typeset with clear horizontal rules.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Example notation conventions.}
 \begin{tabular}{ll}
@@ -1945,7 +1951,7 @@ $\Prob$ & probability \\
 
 PGFPlots can be used for plots directly inside LaTeX.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \begin{tikzpicture}
 \begin{axis}[
@@ -1973,7 +1979,7 @@ SVG files can be included with the \texttt{svg} package:
 
 For example, if \texttt{device.svg} is in the same folder, use:
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 % Requires: latexmk -lualatex -shell-escape this-file.tex
 % Requires Inkscape installed.
@@ -2297,7 +2303,7 @@ Hebrew letters are therefore mostly used in:
 They are not commonly used for ordinary variables in calculus, linear algebra,
 probability, or numerical methods.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Common Hebrew symbols in mathematics.}
 \begin{tabular}{lll}
@@ -2506,7 +2512,7 @@ means the sine of \(x\), not the product \(s i n x\).
 
 \subsection{Summary of Special Alphabets}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Special mathematical alphabets.}
 \begin{tabular}{lll}
@@ -2544,7 +2550,7 @@ with different spoken words.
 
 In Spanish, common mathematical symbols are read approximately as follows:
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Spanish readings of common symbols.}
 \begin{tabular}{ll}
@@ -2609,7 +2615,7 @@ x_{\text{final}}.
 
 In French, the same symbols are read differently:
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{French readings of common symbols.}
 \begin{tabular}{ll}
@@ -2764,7 +2770,7 @@ Hollow shapes are often used as abstract operators or markers. Filled shapes
 are often used as stronger visual markers, graph nodes, bullet symbols, or end
 markers.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Common hollow and solid shape symbols.}
@@ -2880,7 +2886,7 @@ Different dots have different meanings:
 \ddots.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Dot symbols and their common meanings.}
@@ -2947,7 +2953,7 @@ A \triangle B
 (A\setminus B)\cup(B\setminus A).
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Triangle-related notation.}
@@ -3010,7 +3016,7 @@ AB \perp CD
 \]
 means line segment \(AB\) is perpendicular to line segment \(CD\).
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Cross and perpendicular symbols.}
@@ -3078,7 +3084,7 @@ In vector algebra:
 \norm{\vct{a}}\norm{\vct{b}}\cos\theta.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Angle-related notation.}
@@ -3132,7 +3138,7 @@ X^*.
 The meaning depends heavily on context. For this reason, papers should define
 what \(^*\) means.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Star notation.}
@@ -3197,7 +3203,7 @@ In this document, bold notation is preferred:
 \vct{x}.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Common arrow symbols.}
@@ -3281,7 +3287,7 @@ f(x) \sim g(x)
 x\to\infty.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Wavy and approximation symbols.}
@@ -3420,7 +3426,7 @@ endpoint that can be included:
 (-\infty,\infty)=\R.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Interval bracket notation.}
@@ -4224,7 +4230,7 @@ Ions carry charge:
 
 The charge is usually written as a superscript.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Basic chemical notation.}
@@ -4279,7 +4285,7 @@ Chemical equations often include physical states:
 \ce{Na+(aq)}.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Chemical state notation.}
@@ -4373,7 +4379,7 @@ C,
 L.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Basic electrical quantities.}
@@ -4468,7 +4474,7 @@ Ohm's law in phasor form is
 Z\tilde{I}.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Common impedances.}
@@ -4581,7 +4587,7 @@ RNA uses uracil instead of thymine:
 \texttt{U}.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{DNA and RNA base notation.}
@@ -4693,7 +4699,7 @@ A protein sequence may be written
 \texttt{MTEYKLVVVG}.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Examples of amino acid notation.}
@@ -4766,7 +4772,7 @@ Their antiparticles are written with bars:
 \bar{\nu}_\tau.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Common elementary particle notation.}
@@ -4805,7 +4811,7 @@ b.
 
 These stand for up, down, charm, strange, top, and bottom.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Quark notation.}
@@ -4874,7 +4880,7 @@ W^-,
 Z^0.
 \]
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Force carrier notation.}

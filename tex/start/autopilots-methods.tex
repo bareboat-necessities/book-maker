@@ -12,6 +12,8 @@
 ]{geometry}
 
 \usepackage{placeins}
+\usepackage{silence}
+\WarningFilter{latex}{Text page}
 
 \setlength{\columnsep}{0.25in}
 
@@ -2229,8 +2231,8 @@ The GPS sensor defaults to \(\SI{1}{Hz}\), while the APB navigation
 interface contains the main cross-track-error gain used in NAV mode.
 \begin{table*}[!tbp]
 \centering
-\caption{GPS, APB navigation, and user-visible GPS filter values.}
-\label{tab:pypilot-gps-apb-filter-parameters}
+\caption{GPS, APB navigation, GPS filter, and tacking parameters.}
+\label{tab:pypilot-gps-apb-filter-tacking-parameters}
 \begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value/gate & Default & Code range & Practical range & Meaning \\
@@ -2283,6 +2285,23 @@ Velocity measurement sigma & \(\SI{0.25}{m/s}\) & fixed & fixed & GPS velocity n
 Initial position deviation & \(\SI{30}{m}\) & fixed & fixed & Initial/process covariance scale. \\
 Initial velocity deviation & \(\SI{3}{m/s}\) & fixed & fixed & Initial/process covariance scale. \\
 3D mode & \texttt{false} & fixed & fixed & The filter runs in 2D by default. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Configurable tacking parameters}} \\
+\addlinespace[0.25ex]
+\texttt{ap.tack.delay} & \(\SI{0}{s}\) & \(\SI{0}{s}\ldots\SI{60}{s}\) & \(\SI{0}{s}\ldots\SI{10}{s}\) & Delay between tack request and start of tack. \\
+\texttt{ap.tack.angle} & \(100^\circ\) & \(10^\circ\ldots180^\circ\) & \(70^\circ\ldots120^\circ\) & Nominal tack angle in compass mode. \\
+\texttt{ap.tack.rate} & \(\SI{15}{deg/s}\) & \(\SI{1}{deg/s}\ldots\SI{100}{deg/s}\) & \(\SI{5}{deg/s}\ldots\SI{25}{deg/s}\) & Turn-rate scaling during the tack. \\
+\texttt{ap.tack.threshold} & \(\SI{50}{\percent}\) & \(\SI{10}{\percent}\ldots\SI{100}{\percent}\) & \(\SI{40}{\percent}\ldots\SI{70}{\percent}\) & Percent completion at which the tack is considered complete. \\
+\texttt{ap.tack.use\_heel} & \texttt{false} & boolean & usually \texttt{false} & Infer tack side from heel. \\
+\texttt{ap.tack.use\_wind\_direction} & \texttt{true} & boolean & usually \texttt{true} & Infer tack side from apparent wind direction. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Fixed tacking detector gates}} \\
+\addlinespace[0.25ex]
+Direction-log update interval & \(\SI{0.25}{s}\) & fixed & fixed & Tack-direction logs are updated at most this often. \\
+Direction-log clear interval & \(\SI{1}{s}\) & fixed & fixed & Longer update gaps clear the tack-direction log. \\
+Apparent-wind detector threshold & \(20^\circ\) & fixed & fixed & Apparent-wind side-change detector threshold. \\
+Heel detector threshold & \(7^\circ\) & fixed & fixed & Heel side-change detector threshold. \\
+Heel detector warmup & \(\SI{30}{s}\) & fixed & fixed & Heel is ignored until this delay has elapsed. \\
 \bottomrule
 \end{tabularx}
 \end{table*}
@@ -2343,57 +2362,6 @@ External clients initiate a tack by setting the state to
 \texttt{begin}.  The state machine then waits for the configured delay,
 commands a turn, and finishes the tack when the configured threshold is
 crossed.
-\begin{table*}[!tbp]
-\centering
-\caption{Tacking parameters.}
-\label{tab:pypilot-tacking-parameters}
-\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
-\toprule
-Value & Default & Code range & Practical range & Meaning \\
-\midrule
-\multicolumn{5}{l}{\textit{Configurable tacking parameters}} \\
-\addlinespace[0.25ex]
-\texttt{ap.tack.delay} &
-\(\SI{0}{s}\) &
-\(\SI{0}{s}\ldots\SI{60}{s}\) &
-\(\SI{0}{s}\ldots\SI{10}{s}\) &
-Delay between tack request and start of tack. \\
-\texttt{ap.tack.angle} &
-\(100^\circ\) &
-\(10^\circ\ldots180^\circ\) &
-\(70^\circ\ldots120^\circ\) &
-Nominal tack angle in compass mode. \\
-\texttt{ap.tack.rate} &
-\(\SI{15}{deg/s}\) &
-\(\SI{1}{deg/s}\ldots\SI{100}{deg/s}\) &
-\(\SI{5}{deg/s}\ldots\SI{25}{deg/s}\) &
-Turn-rate scaling during the tack. \\
-\texttt{ap.tack.threshold} &
-\(\SI{50}{\percent}\) &
-\(\SI{10}{\percent}\ldots\SI{100}{\percent}\) &
-\(\SI{40}{\percent}\ldots\SI{70}{\percent}\) &
-Percent completion at which the tack is considered complete. \\
-\texttt{ap.tack.use\_heel} &
-\texttt{false} &
-boolean &
-usually \texttt{false} &
-Infer tack side from heel. \\
-\texttt{ap.tack.use\_wind\_direction} &
-\texttt{true} &
-boolean &
-usually \texttt{true} &
-Infer tack side from apparent wind direction. \\
-\addlinespace[0.6ex]
-\multicolumn{5}{l}{\textit{Fixed tacking detector gates}} \\
-\addlinespace[0.25ex]
-Direction-log update interval & \(\SI{0.25}{s}\) & fixed & fixed & Tack-direction logs are updated at most this often. \\
-Direction-log clear interval & \(\SI{1}{s}\) & fixed & fixed & Longer update gaps clear the tack-direction log. \\
-Apparent-wind detector threshold & \(20^\circ\) & fixed & fixed & Apparent-wind side-change detector threshold. \\
-Heel detector threshold & \(7^\circ\) & fixed & fixed & Heel side-change detector threshold. \\
-Heel detector warmup & \(\SI{30}{s}\) & fixed & fixed & Heel is ignored until this delay has elapsed. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 The tack direction detector maintains logs that are updated at most every
 \(\SI{0.25}{s}\).  If the update interval exceeds \(\SI{1}{s}\), the log
 is cleared.  The apparent-wind tack detector uses a threshold of
@@ -2422,35 +2390,66 @@ protects the actuator, handles current and temperature limits, and shapes
 small commands into practical pulses.  This layer is especially important
 because pypilot is designed to work with real DC actuators and motor
 controllers rather than idealized rudder servos.
-\subsubsection{Safety Limits}
+
+The related servo settings are consolidated in
+\cref{tab:pypilot-servo-actuator-parameters}.  The group headers separate
+safety limits, output scaling, timing gates, and lower-level calibration
+while keeping the shared default/range/meaning columns in one place.
 \begin{table*}[!tbp]
 \centering
-\caption{Servo safety limits.}
-\label{tab:pypilot-servo-safety}
+\caption{Servo and actuator parameters.}
+\label{tab:pypilot-servo-actuator-parameters}
 \begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
-Value & Default & Code range & Practical range & Meaning \\
+Value/gate & Default & Code range & Practical range & Meaning \\
 \midrule
-\texttt{servo.max\_current} &
-\(\SI{4.5}{A}\) &
-\(\SI{0}{A}\ldots\SI{50}{A}\) &
-drive-dependent &
-Motor current trip limit sent to the controller. \\
-\texttt{servo.max\_controller\_temp} &
-\(\SI{60}{\celsius}\) &
-\(\SI{45}{\celsius}\ldots\SI{80}{\celsius}\) &
-\(\SI{55}{\celsius}\ldots\SI{70}{\celsius}\) &
-Controller over-temperature limit. \\
-\texttt{servo.max\_motor\_temp} &
-\(\SI{60}{\celsius}\) &
-\(\SI{30}{\celsius}\ldots\SI{80}{\celsius}\) &
-\(\SI{50}{\celsius}\ldots\SI{70}{\celsius}\) &
-Motor over-temperature limit. \\
-\texttt{servo.faults} &
-\num{0} &
-resettable &
-diagnostic &
-Persistent fault counter. \\
+\multicolumn{5}{l}{\textit{Safety limits}} \\
+\addlinespace[0.25ex]
+\texttt{servo.max\_current} & \(\SI{4.5}{A}\) & \(\SI{0}{A}\ldots\SI{50}{A}\) & drive-dependent & Motor current trip limit sent to the controller. \\
+\texttt{servo.max\_controller\_temp} & \(\SI{60}{\celsius}\) & \(\SI{45}{\celsius}\ldots\SI{80}{\celsius}\) & \(\SI{55}{\celsius}\ldots\SI{70}{\celsius}\) & Controller over-temperature limit. \\
+\texttt{servo.max\_motor\_temp} & \(\SI{60}{\celsius}\) & \(\SI{30}{\celsius}\ldots\SI{80}{\celsius}\) & \(\SI{50}{\celsius}\ldots\SI{70}{\celsius}\) & Motor over-temperature limit. \\
+\texttt{servo.faults} & \num{0} & resettable & diagnostic & Persistent fault counter. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Output scaling and pulse shaping}} \\
+\addlinespace[0.25ex]
+\texttt{servo.gain} & \num{1} & \(\num{-10}\ldots\num{10}\) & \(\num{0.5}\ldots\num{2}\), or \(-1\) if reversed & Multiplies final speed command; negative values reverse the drive direction. \\
+\texttt{servo.speed.min} & \(\SI{100}{\percent}\) & \(\SI{0}{\percent}\ldots\SI{100}{\percent}\) & \(\SI{20}{\percent}\ldots\SI{60}{\percent}\) after calibration & Minimum motor speed once a pulse is emitted. \\
+\texttt{servo.speed.max} & \(\SI{100}{\percent}\) & \(\SI{0}{\percent}\ldots\SI{100}{\percent}\) & \(\SI{70}{\percent}\ldots\SI{100}{\percent}\) & Maximum motor speed. \\
+\texttt{servo.speed\_gain} & \num{0} & \(\num{0}\ldots\num{1}\) & \(\num{0}\ldots\num{0.3}\) & Raises minimum speed as duty cycle increases. \\
+\texttt{servo.period} & \(\SI{0.4}{s}\) & \(\SI{0.1}{s}\ldots\SI{1.0}{s}\) & \(\SI{0.25}{s}\ldots\SI{0.6}{s}\) & Pulse/windup period used to avoid tiny actuator movements. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Manual override and command timing gates}} \\
+\addlinespace[0.25ex]
+Manual override block & \(\SI{0.8}{s}\) & fixed & fixed & After an external command, pilot-generated commands are ignored for this long. \\
+Command timeout & \(\SI{1}{s}\) & fixed & fixed & A stale nonzero command is reset to zero. \\
+Zero-command resend interval & \(\SI{0.2}{s}\) after \(\SI{1}{s}\) & fixed & fixed & Avoids spamming zero commands while still keeping the link alive. \\
+Driver timeout & \(\SI{1}{s}\) & fixed & fixed & If command is nonzero but measured current remains zero, a driver-timeout flag is set. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Servo electrical calibration and filtering}} \\
+\addlinespace[0.25ex]
+\texttt{servo.current.factor} & \num{1} & \(\num{0.8}\ldots\num{1.2}\) & near calibrated value & Current calibration multiplier. \\
+\texttt{servo.current.offset} & \num{0} & \(\num{-1.2}\ldots\num{1.2}\) & near calibrated value & Current calibration offset. \\
+\texttt{servo.voltage.factor} & \num{1} & \(\num{0.8}\ldots\num{1.2}\) & near calibrated value & Voltage calibration multiplier. \\
+\texttt{servo.voltage.offset} & \num{0} & \(\num{-1.2}\ldots\num{1.2}\) & near calibrated value & Voltage calibration offset. \\
+\texttt{servo.compensate\_voltage} & \texttt{false} & boolean & drive-dependent & If enabled, scales command approximately by \(12/V\). \\
+\texttt{servo.compensate\_current} & \texttt{false} & boolean & drive-dependent & Uses current compensation when sending controller parameters. \\
+Duty EMA alpha & \num{0.001} & fixed & fixed & Very slow estimate of actuator duty cycle. \\
+Wattage EMA coefficient & \(0.003\Delta t\) & fixed & fixed & Slow average power estimate, roughly several minutes. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Clutch, brake, and position-control parameters}} \\
+\addlinespace[0.25ex]
+\texttt{servo.clutch\_pwm} & \(\SI{100}{\percent}\) & \(\SI{10}{\percent}\ldots\SI{100}{\percent}\) & \(\SI{70}{\percent}\ldots\SI{100}{\percent}\) & Clutch PWM command. \\
+\texttt{servo.use\_brake} & \texttt{true} & boolean & drive-dependent & Applies brake behavior when idle. \\
+\texttt{servo.position.p} & \num{0.1} & \(\num{0.01}\ldots\num{1.0}\) & \(\num{0.05}\ldots\num{0.3}\) & Rudder-position proportional gain. \\
+\texttt{servo.position.i} & \num{0} & \(\num{0}\ldots\num{0.1}\) & \(\num{0}\ldots\num{0.02}\) & Rudder-position integral gain. \\
+\texttt{servo.position.d} & \num{0.01} & \(\num{0}\ldots\num{0.1}\) & \(\num{0}\ldots\num{0.03}\) & Rudder-position derivative/speed damping. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Rudder calibration values}} \\
+\addlinespace[0.25ex]
+\texttt{rudder.range} & \(45^\circ\) & \(10^\circ\ldots100^\circ\) & actual hardover angle & Maximum absolute rudder angle. \\
+\texttt{rudder.offset} & \num{0} & not range-limited & calibration result & Rudder zero offset. \\
+\texttt{rudder.scale} & \num{100} & not range-limited & calibration result & Raw-to-degree scale. \\
+\texttt{rudder.nonlinearity} & \num{0} & not range-limited & calibration result & Quadratic correction term. \\
 \bottomrule
 \end{tabularx}
 \end{table*}
@@ -2459,43 +2458,6 @@ may use only a few amperes, while larger hydraulic or wheel drives can
 require much higher limits.  The Arduino controller also reports its
 current range, and the pypilot host adjusts the allowed maximum
 accordingly.
-\subsubsection{Servo Output Scaling}
-\begin{table*}[!tbp]
-\centering
-\caption{Servo output scaling and pulse-shaping parameters.}
-\label{tab:pypilot-servo-scaling}
-\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
-\toprule
-Value & Default & Code range & Practical range & Meaning \\
-\midrule
-\texttt{servo.gain} &
-\num{1} &
-\(\num{-10}\ldots\num{10}\) &
-\(\num{0.5}\ldots\num{2}\), or \(-1\) if reversed &
-Multiplies final speed command.  Negative values reverse the drive direction. \\
-\texttt{servo.speed.min} &
-\(\SI{100}{\percent}\) &
-\(\SI{0}{\percent}\ldots\SI{100}{\percent}\) &
-\(\SI{20}{\percent}\ldots\SI{60}{\percent}\) after calibration &
-Minimum motor speed once a pulse is emitted. \\
-\texttt{servo.speed.max} &
-\(\SI{100}{\percent}\) &
-\(\SI{0}{\percent}\ldots\SI{100}{\percent}\) &
-\(\SI{70}{\percent}\ldots\SI{100}{\percent}\) &
-Maximum motor speed. \\
-\texttt{servo.speed\_gain} &
-\num{0} &
-\(\num{0}\ldots\num{1}\) &
-\(\num{0}\ldots\num{0.3}\) &
-Raises minimum speed as duty cycle increases. \\
-\texttt{servo.period} &
-\(\SI{0.4}{s}\) &
-\(\SI{0.1}{s}\ldots\SI{1.0}{s}\) &
-\(\SI{0.25}{s}\ldots\SI{0.6}{s}\) &
-Pulse/windup period used to avoid tiny actuator movements. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 The source enforces
 \[
 \texttt{servo.speed.max}
@@ -2506,6 +2468,7 @@ The default \(\SI{100}{\percent}\) minimum and maximum produce a
 full-speed pulsed actuator.  After calibration, lowering the minimum speed
 can give smoother steering, but it must remain high enough to reliably
 move the actuator.
+
 \subsubsection{Servo Windup and Pulse Logic}
 Normal autopilot commands are not always sent directly to the motor.  The
 servo layer integrates a windup term:
@@ -2538,73 +2501,9 @@ direction changes within one \texttt{servo.period}, the previous direction
 or a zero command may be retained briefly.  This protects the actuator
 from rapid reversals and prevents tiny alternating commands from wearing
 the drive.
-\subsubsection{Manual Override and Command Timeout}
 Manual commands and autopilot-generated commands are treated differently.
 External/manual writes to \texttt{servo.command} are immediate, while
 autopilot-generated calls use the period/windup logic.
-\begin{table}[!t]
-\centering
-\caption{Servo command timing gates.}
-\label{tab:pypilot-servo-command-gates}
-\begin{tabularx}{\columnwidth}{Z{0.33\columnwidth}cY}
-\toprule
-Gate & Value & Meaning \\
-\midrule
-Manual override block &
-\(\SI{0.8}{s}\) &
-After an external command, pilot-generated commands are ignored for this long. \\
-Command timeout &
-\(\SI{1}{s}\) &
-A stale nonzero command is reset to zero. \\
-Zero-command resend interval &
-\(\SI{0.2}{s}\) after \(\SI{1}{s}\) &
-Avoids spamming zero commands while still keeping the link alive. \\
-Driver timeout &
-\(\SI{1}{s}\) &
-If command is nonzero but measured current remains zero, a driver-timeout flag is set. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-\subsubsection{Current, Voltage, Position, and Rudder Calibration}
-The electrical, position-control, and rudder-calibration values are grouped
-in \cref{tab:pypilot-servo-electrical-position-rudder} because they are all
-low-level actuator calibration parameters rather than steering-loop gains.
-\begin{table*}[!tbp]
-\centering
-\caption{Servo electrical calibration, filtering, position control, and rudder calibration.}
-\label{tab:pypilot-servo-electrical-position-rudder}
-\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
-\toprule
-Value/filter & Default & Code range & Practical range & Meaning \\
-\midrule
-\multicolumn{5}{l}{\textit{Servo electrical calibration and filtering}} \\
-\addlinespace[0.25ex]
-\texttt{servo.current.factor} & \num{1} & \(\num{0.8}\ldots\num{1.2}\) & near calibrated value & Current calibration multiplier. \\
-\texttt{servo.current.offset} & \num{0} & \(\num{-1.2}\ldots\num{1.2}\) & near calibrated value & Current calibration offset. \\
-\texttt{servo.voltage.factor} & \num{1} & \(\num{0.8}\ldots\num{1.2}\) & near calibrated value & Voltage calibration multiplier. \\
-\texttt{servo.voltage.offset} & \num{0} & \(\num{-1.2}\ldots\num{1.2}\) & near calibrated value & Voltage calibration offset. \\
-\texttt{servo.compensate\_voltage} & \texttt{false} & boolean & drive-dependent & If enabled, scales command approximately by \(12/V\). \\
-\texttt{servo.compensate\_current} & \texttt{false} & boolean & drive-dependent & Uses current compensation when sending controller parameters. \\
-Duty EMA alpha & \num{0.001} & fixed & fixed & Very slow estimate of actuator duty cycle. \\
-Wattage EMA coefficient & \(0.003\Delta t\) & fixed & fixed & Slow average power estimate, roughly several minutes. \\
-\addlinespace[0.6ex]
-\multicolumn{5}{l}{\textit{Clutch, brake, and position-control parameters}} \\
-\addlinespace[0.25ex]
-\texttt{servo.clutch\_pwm} & \(\SI{100}{\percent}\) & \(\SI{10}{\percent}\ldots\SI{100}{\percent}\) & \(\SI{70}{\percent}\ldots\SI{100}{\percent}\) & Clutch PWM command. \\
-\texttt{servo.use\_brake} & \texttt{true} & boolean & drive-dependent & Applies brake behavior when idle. \\
-\texttt{servo.position.p} & \num{0.1} & \(\num{0.01}\ldots\num{1.0}\) & \(\num{0.05}\ldots\num{0.3}\) & Rudder-position proportional gain. \\
-\texttt{servo.position.i} & \num{0} & \(\num{0}\ldots\num{0.1}\) & \(\num{0}\ldots\num{0.02}\) & Rudder-position integral gain. \\
-\texttt{servo.position.d} & \num{0.01} & \(\num{0}\ldots\num{0.1}\) & \(\num{0}\ldots\num{0.03}\) & Rudder-position derivative/speed damping. \\
-\addlinespace[0.6ex]
-\multicolumn{5}{l}{\textit{Rudder calibration values}} \\
-\addlinespace[0.25ex]
-\texttt{rudder.range} & \(45^\circ\) & \(10^\circ\ldots100^\circ\) & actual hardover angle & Maximum absolute rudder angle. \\
-\texttt{rudder.offset} & \num{0} & not range-limited & calibration result & Rudder zero offset. \\
-\texttt{rudder.scale} & \num{100} & not range-limited & calibration result & Raw-to-degree scale. \\
-\texttt{rudder.nonlinearity} & \num{0} & not range-limited & calibration result & Quadratic correction term. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 Small measured currents are suppressed using the learned noise floor:
 \[
 I < 1.2 I_{\mathrm{noise}}
