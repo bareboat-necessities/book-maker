@@ -1355,7 +1355,7 @@ Set heading command &
 Select pilot &
 \texttt{ap.pilot="basic"} \\
 Watch values &
-\texttt{watch=\{"ap.heading":0.25,"ap.enabled":true\}} \\
+{\ttfamily\seqsplit{watch=\{"ap.heading":0.25,"ap.enabled":true\}}} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1397,7 +1397,7 @@ Generic value.  Not necessarily writable. \\
 Read-only or owner-updated measured value, often rounded for output. \\
 \texttt{StringValue} &
 String-valued state or diagnostic value. \\
-\texttt{BooleanProperty} &
+{\ttfamily\seqsplit{BooleanProperty}} &
 Writable boolean property. \\
 \texttt{RangeProperty} &
 Writable numeric property with minimum and maximum limits. \\
@@ -1513,7 +1513,7 @@ change the commanded heading.
 Value & Type & Example & Meaning \\
 \midrule
 \texttt{ap.enabled} &
-\texttt{BooleanProperty} &
+{\ttfamily\seqsplit{BooleanProperty}} &
 \texttt{ap.enabled=true} &
 Engage or disengage the autopilot.  \texttt{false} is standby. \\
 \texttt{ap.mode} &
@@ -1979,7 +1979,7 @@ EMA alpha for heading. \\
 \(\num{0.05}\ldots\num{0.3}\) &
 \(\num{0.1}\ldots\num{0.25}\) &
 EMA alpha for gyro-derived heading rate. \\
-\texttt{imu.headingraterate\_lowpass\_constant} &
+{\ttfamily\seqsplit{imu.headingraterate\_lowpass\_constant}} &
 \num{0.1} &
 \(\num{0.05}\ldots\num{0.3}\) &
 \(\num{0.05}\ldots\num{0.15}\) &
@@ -2225,12 +2225,14 @@ The GPS sensor defaults to \(\SI{1}{Hz}\), while the APB navigation
 interface contains the main cross-track-error gain used in NAV mode.
 \begin{table*}[!tbp]
 \centering
-\caption{GPS and APB navigation parameters.}
-\label{tab:pypilot-gps-apb-parameters}
+\caption{GPS, APB navigation, and user-visible GPS filter values.}
+\label{tab:pypilot-gps-apb-filter-parameters}
 \begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value/gate & Default & Code range & Practical range & Meaning \\
 \midrule
+\multicolumn{5}{l}{\textit{GPS and APB navigation parameters}} \\
+\addlinespace[0.25ex]
 \texttt{gps.rate} &
 \(\SI{1}{Hz}\) &
 \(\SI{0}{Hz}\ldots\SI{50}{Hz}\) &
@@ -2251,6 +2253,32 @@ Heading-command update threshold &
 fixed &
 fixed &
 NAV mode only writes a new command if it differs by more than this. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{User-visible GPS filter values}} \\
+\addlinespace[0.25ex]
+\texttt{gps.filtered.enabled} &
+\texttt{false} &
+boolean &
+usually \texttt{false} &
+Enables the GPS/IMU filter process. \\
+\texttt{gps.filtered.output} &
+\texttt{false} &
+boolean &
+usually \texttt{false} &
+Controls whether filtered GPS output is used/exported. \\
+\texttt{gps.filtered.time\_offset} &
+\(\SI{0.7}{s}\) &
+not range-limited &
+\(\SI{0.3}{s}\ldots\SI{1.5}{s}\) &
+Assumed GPS latency. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Fixed GPS filter constants}} \\
+\addlinespace[0.25ex]
+Position measurement sigma & \(\SI{10}{m}\) & fixed & fixed & GPS position noise assumption. \\
+Velocity measurement sigma & \(\SI{0.25}{m/s}\) & fixed & fixed & GPS velocity noise assumption. \\
+Initial position deviation & \(\SI{30}{m}\) & fixed & fixed & Initial/process covariance scale. \\
+Initial velocity deviation & \(\SI{3}{m/s}\) & fixed & fixed & Initial/process covariance scale. \\
+3D mode & \texttt{false} & fixed & fixed & The filter runs in 2D by default. \\
 \bottomrule
 \end{tabularx}
 \end{table*}
@@ -2277,62 +2305,10 @@ The APB update only affects the heading command when
 \texttt{ap.enabled}=\texttt{true},
 \]
 and the APB data mode is accepted as GPS-derived navigation data.
-\subsection{Optional GPS Filter Parameters}
 The optional filtered GPS process is disabled by default.  It estimates
 position and velocity with a simple Kalman structure using GPS fixes and
 IMU acceleration.  It is not the normal steering loop in the inspected
 configuration.
-\begin{table}[!t]
-\centering
-\caption{User-visible GPS filter values.}
-\label{tab:pypilot-gps-filter-values}
-\begin{tabularx}{\columnwidth}{Z{0.35\columnwidth}ccY}
-\toprule
-Value & Default & Practical range & Meaning \\
-\midrule
-\texttt{gps.filtered.enabled} &
-\texttt{false} &
-usually \texttt{false} &
-Enables the GPS/IMU filter process. \\
-\texttt{gps.filtered.output} &
-\texttt{false} &
-usually \texttt{false} &
-Controls whether filtered GPS output is used/exported. \\
-\texttt{gps.filtered.time\_offset} &
-\(\SI{0.7}{s}\) &
-\(\SI{0.3}{s}\ldots\SI{1.5}{s}\) &
-Assumed GPS latency. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-The fixed measurement and covariance constants are summarized in
-\cref{tab:pypilot-gps-filter-fixed}.
-\begin{table}[!t]
-\centering
-\caption{Fixed GPS filter constants.}
-\label{tab:pypilot-gps-filter-fixed}
-\begin{tabularx}{\columnwidth}{Z{0.33\columnwidth}cY}
-\toprule
-Constant & Value & Meaning \\
-\midrule
-Position measurement sigma &
-\(\SI{10}{m}\) &
-GPS position noise assumption. \\
-Velocity measurement sigma &
-\(\SI{0.25}{m/s}\) &
-GPS velocity noise assumption. \\
-Initial position deviation &
-\(\SI{30}{m}\) &
-Initial/process covariance scale. \\
-Initial velocity deviation &
-\(\SI{3}{m/s}\) &
-Initial/process covariance scale. \\
-3D mode &
-\texttt{false} &
-The filter runs in 2D by default. \\
-\bottomrule
-\end{tabularx}
-\end{table}
 The GPS filter also contains several timing gates:
 \[
 \Delta t_{\mathrm{predict}} < 0
@@ -2371,6 +2347,8 @@ crossed.
 \toprule
 Value & Default & Code range & Practical range & Meaning \\
 \midrule
+\multicolumn{5}{l}{\textit{Configurable tacking parameters}} \\
+\addlinespace[0.25ex]
 \texttt{ap.tack.delay} &
 \(\SI{0}{s}\) &
 \(\SI{0}{s}\ldots\SI{60}{s}\) &
@@ -2401,6 +2379,14 @@ Infer tack side from heel. \\
 boolean &
 usually \texttt{true} &
 Infer tack side from apparent wind direction. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Fixed tacking detector gates}} \\
+\addlinespace[0.25ex]
+Direction-log update interval & \(\SI{0.25}{s}\) & fixed & fixed & Tack-direction logs are updated at most this often. \\
+Direction-log clear interval & \(\SI{1}{s}\) & fixed & fixed & Longer update gaps clear the tack-direction log. \\
+Apparent-wind detector threshold & \(20^\circ\) & fixed & fixed & Apparent-wind side-change detector threshold. \\
+Heel detector threshold & \(7^\circ\) & fixed & fixed & Heel side-change detector threshold. \\
+Heel detector warmup & \(\SI{30}{s}\) & fixed & fixed & Heel is ignored until this delay has elapsed. \\
 \bottomrule
 \end{tabularx}
 \end{table*}
@@ -2575,55 +2561,43 @@ If command is nonzero but measured current remains zero, a driver-timeout flag i
 \bottomrule
 \end{tabularx}
 \end{table}
-\subsubsection{Current, Voltage, and Power Filters}
+\subsubsection{Current, Voltage, Position, and Rudder Calibration}
+The electrical, position-control, and rudder-calibration values are grouped
+in \cref{tab:pypilot-servo-electrical-position-rudder} because they are all
+low-level actuator calibration parameters rather than steering-loop gains.
 \begin{table*}[!tbp]
 \centering
-\caption{Servo electrical calibration and filtering.}
-\label{tab:pypilot-servo-electrical}
+\caption{Servo electrical calibration, filtering, position control, and rudder calibration.}
+\label{tab:pypilot-servo-electrical-position-rudder}
 \begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
 \toprule
 Value/filter & Default & Code range & Practical range & Meaning \\
 \midrule
-\texttt{servo.current.factor} &
-\num{1} &
-\(\num{0.8}\ldots\num{1.2}\) &
-near calibrated value &
-Current calibration multiplier. \\
-\texttt{servo.current.offset} &
-\num{0} &
-\(\num{-1.2}\ldots\num{1.2}\) &
-near calibrated value &
-Current calibration offset. \\
-\texttt{servo.voltage.factor} &
-\num{1} &
-\(\num{0.8}\ldots\num{1.2}\) &
-near calibrated value &
-Voltage calibration multiplier. \\
-\texttt{servo.voltage.offset} &
-\num{0} &
-\(\num{-1.2}\ldots\num{1.2}\) &
-near calibrated value &
-Voltage calibration offset. \\
-\texttt{servo.compensate\_voltage} &
-\texttt{false} &
-boolean &
-drive-dependent &
-If enabled, scales command approximately by \(12/V\). \\
-\texttt{servo.compensate\_current} &
-\texttt{false} &
-boolean &
-drive-dependent &
-Uses current compensation when sending controller parameters. \\
-Duty EMA alpha &
-\num{0.001} &
-fixed &
-fixed &
-Very slow estimate of actuator duty cycle. \\
-Wattage EMA coefficient &
-\(0.003\Delta t\) &
-fixed &
-fixed &
-Slow average power estimate, roughly several minutes. \\
+\multicolumn{5}{l}{\textit{Servo electrical calibration and filtering}} \\
+\addlinespace[0.25ex]
+\texttt{servo.current.factor} & \num{1} & \(\num{0.8}\ldots\num{1.2}\) & near calibrated value & Current calibration multiplier. \\
+\texttt{servo.current.offset} & \num{0} & \(\num{-1.2}\ldots\num{1.2}\) & near calibrated value & Current calibration offset. \\
+\texttt{servo.voltage.factor} & \num{1} & \(\num{0.8}\ldots\num{1.2}\) & near calibrated value & Voltage calibration multiplier. \\
+\texttt{servo.voltage.offset} & \num{0} & \(\num{-1.2}\ldots\num{1.2}\) & near calibrated value & Voltage calibration offset. \\
+\texttt{servo.compensate\_voltage} & \texttt{false} & boolean & drive-dependent & If enabled, scales command approximately by \(12/V\). \\
+\texttt{servo.compensate\_current} & \texttt{false} & boolean & drive-dependent & Uses current compensation when sending controller parameters. \\
+Duty EMA alpha & \num{0.001} & fixed & fixed & Very slow estimate of actuator duty cycle. \\
+Wattage EMA coefficient & \(0.003\Delta t\) & fixed & fixed & Slow average power estimate, roughly several minutes. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Clutch, brake, and position-control parameters}} \\
+\addlinespace[0.25ex]
+\texttt{servo.clutch\_pwm} & \(\SI{100}{\percent}\) & \(\SI{10}{\percent}\ldots\SI{100}{\percent}\) & \(\SI{70}{\percent}\ldots\SI{100}{\percent}\) & Clutch PWM command. \\
+\texttt{servo.use\_brake} & \texttt{true} & boolean & drive-dependent & Applies brake behavior when idle. \\
+\texttt{servo.position.p} & \num{0.1} & \(\num{0.01}\ldots\num{1.0}\) & \(\num{0.05}\ldots\num{0.3}\) & Rudder-position proportional gain. \\
+\texttt{servo.position.i} & \num{0} & \(\num{0}\ldots\num{0.1}\) & \(\num{0}\ldots\num{0.02}\) & Rudder-position integral gain. \\
+\texttt{servo.position.d} & \num{0.01} & \(\num{0}\ldots\num{0.1}\) & \(\num{0}\ldots\num{0.03}\) & Rudder-position derivative/speed damping. \\
+\addlinespace[0.6ex]
+\multicolumn{5}{l}{\textit{Rudder calibration values}} \\
+\addlinespace[0.25ex]
+\texttt{rudder.range} & \(45^\circ\) & \(10^\circ\ldots100^\circ\) & actual hardover angle & Maximum absolute rudder angle. \\
+\texttt{rudder.offset} & \num{0} & not range-limited & calibration result & Rudder zero offset. \\
+\texttt{rudder.scale} & \num{100} & not range-limited & calibration result & Raw-to-degree scale. \\
+\texttt{rudder.nonlinearity} & \num{0} & not range-limited & calibration result & Quadratic correction term. \\
 \bottomrule
 \end{tabularx}
 \end{table*}
@@ -2636,43 +2610,6 @@ I=0.
 The current noise estimate is updated only when the command has been idle
 for more than \(\SI{3}{s}\), so that motor current is not mistaken for
 sensor noise.
-\subsubsection{Clutch, Brake, and Position PID}
-\begin{table*}[!tbp]
-\centering
-\caption{Clutch, brake, and position-control parameters.}
-\label{tab:pypilot-servo-position}
-\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
-\toprule
-Value & Default & Code range & Practical range & Meaning \\
-\midrule
-\texttt{servo.clutch\_pwm} &
-\(\SI{100}{\percent}\) &
-\(\SI{10}{\percent}\ldots\SI{100}{\percent}\) &
-\(\SI{70}{\percent}\ldots\SI{100}{\percent}\) &
-Clutch PWM command. \\
-\texttt{servo.use\_brake} &
-\texttt{true} &
-boolean &
-drive-dependent &
-Applies brake behavior when idle. \\
-\texttt{servo.position.p} &
-\num{0.1} &
-\(\num{0.01}\ldots\num{1.0}\) &
-\(\num{0.05}\ldots\num{0.3}\) &
-Rudder-position proportional gain. \\
-\texttt{servo.position.i} &
-\num{0} &
-\(\num{0}\ldots\num{0.1}\) &
-\(\num{0}\ldots\num{0.02}\) &
-Rudder-position integral gain. \\
-\texttt{servo.position.d} &
-\num{0.01} &
-\(\num{0}\ldots\num{0.1}\) &
-\(\num{0}\ldots\num{0.03}\) &
-Rudder-position derivative/speed damping. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 The position-command path filters the position error as
 \[
 e_f[k]
@@ -2682,9 +2619,8 @@ e_f[k]
 0.02\,\operatorname{clamp}(e[k],-30,30).
 \]
 At the default control rate, this is a slow filter with an approximate
-time constant of \(\SI{2.5}{s}\).
-\subsection{Rudder Calibration Parameters}
-The rudder sensor model maps a raw normalized sensor reading into degrees:
+time constant of \(\SI{2.5}{s}\).  Rudder calibration maps the raw reading
+\(r\) to an angle using scale \(s\), offset \(o\), and nonlinearity \(n\):
 \[
 \delta_r
 =
@@ -2692,41 +2628,8 @@ s r
 +
 o
 +
-n(r_{\min}-r)(r_{\max}-r),
+n(r_{\min}-r)(r_{\max}-r).
 \]
-where \(r\) is the raw rudder reading, \(s\) is scale, \(o\) is offset,
-and \(n\) is nonlinearity.
-\begin{table*}[!tbp]
-\centering
-\caption{Rudder calibration values.}
-\label{tab:pypilot-rudder-calibration}
-\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
-\toprule
-Value & Default & Code range & Practical range & Meaning \\
-\midrule
-\texttt{rudder.range} &
-\(45^\circ\) &
-\(10^\circ\ldots100^\circ\) &
-actual hardover angle &
-Maximum absolute rudder angle. \\
-\texttt{rudder.offset} &
-\num{0} &
-not range-limited &
-calibration result &
-Rudder zero offset. \\
-\texttt{rudder.scale} &
-\num{100} &
-not range-limited &
-calibration result &
-Raw-to-degree scale. \\
-\texttt{rudder.nonlinearity} &
-\num{0} &
-not range-limited &
-calibration result &
-Quadratic correction term. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 The rudder-speed estimate is filtered by
 \[
 \dot{\delta}_{r,f}[k]
