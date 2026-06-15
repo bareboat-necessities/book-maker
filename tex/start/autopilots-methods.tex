@@ -518,10 +518,10 @@ speed request than to an absolute rudder angle.
 \draw[arrow] (pilot) -- (servo);
 \draw[arrow] (servo) -- (boat);
 \draw[arrow]
-  ([yshift=-0.10cm]boat.south)
-  to[out=-70,in=-110,looseness=0.75]
+  ([yshift=-0.06cm]boat.south)
+  to[out=-65,in=-115,looseness=0.55]
   node[below, midway, font=\scriptsize] {motion feedback}
-  ([yshift=-0.10cm]imu.south);
+  ([yshift=-0.06cm]imu.south);
 
 \node[block, below=1.0cm of error] (tack) {Tack/jibe state\\machine override};
 \draw[arrow] (tack) -- (pilot.south);
