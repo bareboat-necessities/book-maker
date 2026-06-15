@@ -1066,7 +1066,7 @@ so the first three bytes are
 \mathtt{0xC7},\quad \mathtt{0xE8},\quad \mathtt{0x03}.
 \]
 \subsection{Host-to-Controller Commands}
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Host-to-servo packet codes used by the pypilot Arduino motor-controller protocol.}
 \label{tab:pypilot-servo-host-codes}
@@ -1498,7 +1498,7 @@ The most important writable autopilot values are listed in
 \cref{tab:pypilot-autopilot-values}.  These are the values an external
 controller normally uses to engage the pilot, choose a steering mode, and
 change the commanded heading.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Primary autopilot control values in the TCP protocol.}
 \label{tab:pypilot-autopilot-values}
@@ -1764,7 +1764,7 @@ rate-of-rate, and \(\dot{\psi}_c\) is the filtered change in commanded
 heading.  The square-root term is unusual compared with a conventional PID
 controller.  It gives useful authority near small and moderate heading
 errors without requiring a large linear proportional gain.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Basic pilot gains.}
 \label{tab:pypilot-basic-gains}
@@ -1837,7 +1837,7 @@ K_{DD} \ddot{\psi}
 K_{WG} g_w ,
 \]
 where \(g_w\) is the apparent wind-speed change used as a gust signal.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Wind pilot gains.}
 \label{tab:pypilot-wind-gains}
@@ -1875,7 +1875,7 @@ The absolute pilot attempts to command a rudder position rather than a
 relative motor speed.  It requires valid rudder feedback.  In the inspected
 source, it is present and active, but should be regarded as experimental
 because its behavior depends strongly on rudder calibration.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Absolute pilot gains.}
 \label{tab:pypilot-absolute-gains}
@@ -1988,7 +1988,7 @@ the opposite sign convention because apparent wind direction is a
 \subsection{IMU and Heading Filters}
 The default IMU/control loop rate is \(\SI{20}{Hz}\).  The allowed rate
 choices are \(\SI{10}{Hz}\) and \(\SI{20}{Hz}\).
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{IMU and heading filter parameters.}
 \label{tab:pypilot-imu-filters}
@@ -2095,7 +2095,7 @@ When this gate is satisfied, the update factor is
 \]
 This gives GPS track more authority at higher speed and avoids using GPS
 course-over-ground when the vessel is nearly stationary.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Compass, GPS, and wind offset filters.}
 \label{tab:pypilot-offset-filters}
@@ -2154,7 +2154,7 @@ V_{w,f}[k]
 At \(\SI{4}{Hz}\), the approximate time constant is about
 \(\SI{25}{s}\).  This slow speed estimate is then used to weight the
 direction filter.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Wind and true-wind filtering parameters.}
 \label{tab:pypilot-wind-filters}
@@ -2260,7 +2260,7 @@ alignment and sensor geometry are trusted.
 \subsection{GPS, APB, and Navigation Parameters}
 The GPS sensor defaults to \(\SI{1}{Hz}\), while the APB navigation
 interface contains the main cross-track-error gain used in NAV mode.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{GPS and APB navigation parameters.}
 \label{tab:pypilot-gps-apb-parameters}
@@ -2400,7 +2400,7 @@ External clients initiate a tack by setting the state to
 \texttt{begin}.  The state machine then waits for the configured delay,
 commands a turn, and finishes the tack when the configured threshold is
 crossed.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Tacking parameters.}
 \label{tab:pypilot-tacking-parameters}
@@ -2470,7 +2470,7 @@ small commands into practical pulses.  This layer is especially important
 because pypilot is designed to work with real DC actuators and motor
 controllers rather than idealized rudder servos.
 \subsubsection{Safety Limits}
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Servo safety limits.}
 \label{tab:pypilot-servo-safety}
@@ -2507,7 +2507,7 @@ require much higher limits.  The Arduino controller also reports its
 current range, and the pypilot host adjusts the allowed maximum
 accordingly.
 \subsubsection{Servo Output Scaling}
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Servo output scaling and pulse-shaping parameters.}
 \label{tab:pypilot-servo-scaling}
@@ -2613,7 +2613,7 @@ If command is nonzero but measured current remains zero, a driver-timeout flag i
 \end{tabularx}
 \end{table}
 \subsubsection{Current, Voltage, and Power Filters}
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Servo electrical calibration and filtering.}
 \label{tab:pypilot-servo-electrical}
@@ -2674,7 +2674,7 @@ The current noise estimate is updated only when the command has been idle
 for more than \(\SI{3}{s}\), so that motor current is not mistaken for
 sensor noise.
 \subsubsection{Clutch, Brake, and Position PID}
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Clutch, brake, and position-control parameters.}
 \label{tab:pypilot-servo-position}
@@ -2733,7 +2733,7 @@ n(r_{\min}-r)(r_{\max}-r),
 \]
 where \(r\) is the raw rudder reading, \(s\) is scale, \(o\) is offset,
 and \(n\) is nonlinearity.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Rudder calibration values.}
 \label{tab:pypilot-rudder-calibration}
@@ -2858,7 +2858,7 @@ T = \frac{1}{\texttt{imu.rate}}.
 At the default \(\SI{20}{Hz}\), \(T=\SI{0.05}{s}\).  The main loop
 contains diagnostic timing gates, summarized in
 \cref{tab:pypilot-loop-timing}.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Main-loop timing gates.}
 \label{tab:pypilot-loop-timing}
@@ -2916,7 +2916,7 @@ default.  These include \texttt{simple}, \texttt{rate}, \texttt{gps},
 should not be presented as ordinary production tuning parameters unless
 the corresponding module is explicitly enabled and tested.
 
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Disabled or experimental pilot parameters.}
 \label{tab:pypilot-disabled-pilots}
@@ -3041,7 +3041,7 @@ one firmware image.  Its main control loop parses incoming NMEA and
 proprietary Fenix messages, updates heading and sensor state, computes the
 pilot command, reads rudder feedback, checks current limits, and directly
 drives the linear actuator through PWM and a direction pin.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{System-level comparison between pypilot and Fenix.}
 \label{tab:pypilot-fenix-architecture}
@@ -3114,7 +3114,7 @@ A second layer then moves the linear actuator until the measured rudder
 position approaches \(\delta_{r,c}\).  This makes Fenix more explicitly a
 rudder-position autopilot, while pypilot's basic pilot is more directly a
 servo-command autopilot.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Control-method comparison.}
 \label{tab:pypilot-fenix-control}
@@ -3214,7 +3214,7 @@ pulses and protects the drive using current, voltage, temperature, rudder
 feedback when available, driver timeout, and fault flags from the Arduino
 servo controller.  This makes pypilot more tolerant of different actuator
 types, while Fenix is more focused on a known feedback linear actuator.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Actuator-control comparison.}
 \label{tab:pypilot-fenix-actuator}
@@ -3343,7 +3343,7 @@ named values over the TCP value protocol and can be watched or changed by
 clients.  Persistent profiles and runtime values are part of the pypilot
 server model.  The servo controller also has its own binary protocol for
 low-level motor parameters.
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Commissioning and protocol comparison.}
 \label{tab:pypilot-fenix-protocol}
@@ -3432,14 +3432,13 @@ The central method difference can be summarized as
 \end{array}
 \]
 
-\FloatBarrier
-
 For a small Arduino-only autopilot with a known potentiometer-feedback
 linear actuator, Fenix is a coherent and practical design.  For a larger
 open navigation system with network clients, mixed sensors, remote
 interfaces, and replaceable pilot algorithms, pypilot has the stronger
 system architecture.
 
+\FloatBarrier
 \section{Conclusion}
 
 The uploaded \texttt{pypilot} source is best characterized as Sean D'Epagnier's
