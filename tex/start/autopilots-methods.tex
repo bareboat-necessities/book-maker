@@ -1766,37 +1766,56 @@ controller.  It gives useful authority near small and moderate heading
 errors without requiring a large linear proportional gain.
 \begin{table*}[!tbp]
 \centering
-\caption{Basic pilot gains.}
+\caption{Active pilot gains for the basic, wind, and absolute pilots.}
+\label{tab:pypilot-active-pilot-gains}
 \label{tab:pypilot-basic-gains}
-\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
+\label{tab:pypilot-wind-gains}
+\label{tab:pypilot-absolute-gains}
+\begin{tabularx}{\textwidth}{Z{0.13\textwidth}Z{0.20\textwidth}c c Z{0.13\textwidth}Y}
 \toprule
-Value & Default & Code range & Practical range & Meaning \\
+Pilot & Value & Default & Code range & Practical range & Meaning \\
 \midrule
-\texttt{ap.pilot.basic.P} &
-\num{0.003} &
-\(\num{0}\ldots\num{0.03}\) &
-\(\num{0.001}\ldots\num{0.010}\) &
+\multirow{5}{*}{\texttt{basic}} & \texttt{ap.pilot.basic.P} &
+\num{0.003} & \(\num{0}\ldots\num{0.03}\) & \(\num{0.001}\ldots\num{0.010}\) &
 Linear heading-error gain.  Higher values turn harder toward the commanded heading; excessive values cause hunting. \\
-\texttt{ap.pilot.basic.D} &
-\num{0.09} &
-\(\num{0}\ldots\num{0.24}\) &
-\(\num{0.04}\ldots\num{0.16}\) &
+& \texttt{ap.pilot.basic.D} &
+\num{0.09} & \(\num{0}\ldots\num{0.24}\) & \(\num{0.04}\ldots\num{0.16}\) &
 Heading-rate damping from the gyro.  Higher values suppress oscillation but can make the response sluggish. \\
-\texttt{ap.pilot.basic.DD} &
-\num{0.075} &
-\(\num{0}\ldots\num{0.24}\) &
-\(\num{0}\ldots\num{0.14}\) &
+& \texttt{ap.pilot.basic.DD} &
+\num{0.075} & \(\num{0}\ldots\num{0.24}\) & \(\num{0}\ldots\num{0.14}\) &
 Heading-acceleration damping.  Useful for suppressing sharp yaw-rate changes; too much can amplify noise. \\
-\texttt{ap.pilot.basic.PR} &
-\num{0.005} &
-\(\num{0}\ldots\num{0.02}\) &
-\(\num{0.002}\ldots\num{0.010}\) &
+& \texttt{ap.pilot.basic.PR} &
+\num{0.005} & \(\num{0}\ldots\num{0.02}\) & \(\num{0.002}\ldots\num{0.010}\) &
 Square-root heading-error gain.  Adds authority without requiring a large linear \(P\) gain. \\
-\texttt{ap.pilot.basic.FF} &
-\num{0.6} &
-\(\num{0}\ldots\num{2.4}\) &
-\(\num{0.2}\ldots\num{1.2}\) &
+& \texttt{ap.pilot.basic.FF} &
+\num{0.6} & \(\num{0}\ldots\num{2.4}\) & \(\num{0.2}\ldots\num{1.2}\) &
 Feed-forward from commanded heading changes.  Improves response to button pushes or external course changes. \\
+\midrule
+\multirow{4}{*}{\texttt{wind}} & \texttt{ap.pilot.wind.P} &
+\num{0.003} & \(\num{0}\ldots\num{0.02}\) & \(\num{0.001}\ldots\num{0.008}\) &
+Wind-angle or wind-referenced heading-error gain. \\
+& \texttt{ap.pilot.wind.D} &
+\num{0.1} & \(\num{0}\ldots\num{1.0}\) & \(\num{0.04}\ldots\num{0.25}\) &
+Heading-rate damping. \\
+& \texttt{ap.pilot.wind.DD} &
+\num{0.05} & \(\num{0}\ldots\num{1.0}\) & \(\num{0}\ldots\num{0.15}\) &
+Heading-acceleration damping. \\
+& \texttt{ap.pilot.wind.WG} &
+\num{0} & \(\num{-0.1}\ldots\num{0.1}\) & \(\num{-0.03}\ldots\num{0.03}\) &
+Wind-gust compensation.  Should normally remain near zero unless wind data are clean and well-filtered. \\
+\midrule
+\multirow{4}{*}{\texttt{absolute}} & \texttt{ap.pilot.absolute.P} &
+\num{0.05} & \(\num{0}\ldots\num{0.3}\) & \(\num{0.02}\ldots\num{0.12}\) &
+Converts heading error into rudder-position command. \\
+& \texttt{ap.pilot.absolute.I} &
+\num{0} & \(\num{0}\ldots\num{0.8}\) & \(\num{0}\ldots\num{0.05}\) &
+Integral correction.  Can wind up if used aggressively. \\
+& \texttt{ap.pilot.absolute.D} &
+\num{0.05} & \(\num{0}\ldots\num{0.5}\) & \(\num{0.02}\ldots\num{0.15}\) &
+Heading-rate damping. \\
+& \texttt{ap.pilot.absolute.FF} &
+\num{0} & \(\num{0}\ldots\num{1.0}\) & \(\num{0}\ldots\num{0.5}\) &
+Feed-forward from heading-command changes. \\
 \bottomrule
 \end{tabularx}
 \end{table*}
@@ -1837,37 +1856,6 @@ K_{DD} \ddot{\psi}
 K_{WG} g_w ,
 \]
 where \(g_w\) is the apparent wind-speed change used as a gust signal.
-\begin{table*}[!tbp]
-\centering
-\caption{Wind pilot gains.}
-\label{tab:pypilot-wind-gains}
-\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
-\toprule
-Value & Default & Code range & Practical range & Meaning \\
-\midrule
-\texttt{ap.pilot.wind.P} &
-\num{0.003} &
-\(\num{0}\ldots\num{0.02}\) &
-\(\num{0.001}\ldots\num{0.008}\) &
-Wind-angle or wind-referenced heading-error gain. \\
-\texttt{ap.pilot.wind.D} &
-\num{0.1} &
-\(\num{0}\ldots\num{1.0}\) &
-\(\num{0.04}\ldots\num{0.25}\) &
-Heading-rate damping. \\
-\texttt{ap.pilot.wind.DD} &
-\num{0.05} &
-\(\num{0}\ldots\num{1.0}\) &
-\(\num{0}\ldots\num{0.15}\) &
-Heading-acceleration damping. \\
-\texttt{ap.pilot.wind.WG} &
-\num{0} &
-\(\num{-0.1}\ldots\num{0.1}\) &
-\(\num{-0.03}\ldots\num{0.03}\) &
-Wind-gust compensation.  Should normally remain near zero unless wind data are clean and well-filtered. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 The \texttt{WG} gain should be treated carefully.  A noisy wind sensor will
 inject noise directly into the rudder command if \texttt{WG} is increased.
 \subsubsection{Absolute Pilot}
@@ -1875,37 +1863,6 @@ The absolute pilot attempts to command a rudder position rather than a
 relative motor speed.  It requires valid rudder feedback.  In the inspected
 source, it is present and active, but should be regarded as experimental
 because its behavior depends strongly on rudder calibration.
-\begin{table*}[!tbp]
-\centering
-\caption{Absolute pilot gains.}
-\label{tab:pypilot-absolute-gains}
-\begin{tabularx}{\textwidth}{Z{0.23\textwidth}c c Z{0.16\textwidth}Y}
-\toprule
-Value & Default & Code range & Practical range & Meaning \\
-\midrule
-\texttt{ap.pilot.absolute.P} &
-\num{0.05} &
-\(\num{0}\ldots\num{0.3}\) &
-\(\num{0.02}\ldots\num{0.12}\) &
-Converts heading error into rudder-position command. \\
-\texttt{ap.pilot.absolute.I} &
-\num{0} &
-\(\num{0}\ldots\num{0.8}\) &
-\(\num{0}\ldots\num{0.05}\) &
-Integral correction.  Can wind up if used aggressively. \\
-\texttt{ap.pilot.absolute.D} &
-\num{0.05} &
-\(\num{0}\ldots\num{0.5}\) &
-\(\num{0.02}\ldots\num{0.15}\) &
-Heading-rate damping. \\
-\texttt{ap.pilot.absolute.FF} &
-\num{0} &
-\(\num{0}\ldots\num{1.0}\) &
-\(\num{0}\ldots\num{0.5}\) &
-Feed-forward from heading-command changes. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 \subsection{Heading Error, Command Rate, and Integral Gates}
 The autopilot does not feed unbounded heading error into the pilot.  The
 heading error is explicitly clamped:
