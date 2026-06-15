@@ -19,6 +19,10 @@
 \usepackage{xurl}
 \usepackage{seqsplit}
 \setlength{\emergencystretch}{2em}
+\hbadness=10000
+\vbadness=10000
+\hfuzz=20pt
+\vfuzz=20pt
 \frenchspacing
 
 % Compact paragraph style: no blank paragraph gaps.
@@ -39,7 +43,7 @@
 % Fonts: LuaLaTeX or XeLaTeX
 % ------------------------------------------------------------
 \usepackage{fontspec}
-\usepackage{unicode-math}
+\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
 
 % Use Times-like fonts if available; otherwise fall back to DejaVu.
 \IfFontExistsTF{TeX Gyre Termes}
@@ -1306,8 +1310,8 @@ Each protocol record is a single assignment line:
 The left side is a pypilot value name.  The right side is a JSON value.
 The whole line is not JSON; only the right-hand side is JSON.
 A compact grammar is
+{\scriptsize
 \[
-\scriptsize
 \begin{aligned}
 \text{record} &::= \text{name}\; \texttt{=}\; \text{json-value}\; \texttt{\textbackslash n},\\
 \text{name} &::= \text{dotted pypilot value name},\\
@@ -1315,6 +1319,7 @@ A compact grammar is
                    \mid \text{array} \mid \text{object}.
 \end{aligned}
 \]
+}
 Thus a valid command line is
 \[
 \texttt{ap.enabled=true\textbackslash n},
@@ -1417,8 +1422,8 @@ The server replies with a line of the form
 \]
 where the right-hand side is a JSON object mapping value names to metadata
 objects.  A representative fragment is
+{\scriptsize
 \[
-\scriptsize
 \begin{aligned}
 \texttt{values=\{}&
 \texttt{"ap.enabled":\{"type":"BooleanProperty","writable":true\},}\\
@@ -1432,6 +1437,7 @@ objects.  A representative fragment is
 \texttt{"writable":true,"min":-180,"max":360\}\}}
 \end{aligned}
 \]
+}
 with the actual server response containing many more values.  This
 metadata mechanism allows user interfaces to construct controls
 automatically: check boxes for boolean properties, sliders for range
@@ -3012,7 +3018,6 @@ drives the linear actuator through PWM and a direction pin.
 \setlength{\tabcolsep}{2.4pt}
 \renewcommand{\arraystretch}{0.96}
 \begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
-\scriptsize
 \toprule
 Aspect & pypilot & Fenix \\
 \midrule
@@ -3325,13 +3330,14 @@ one firmware.
 \subsection{Practical Interpretation}
 Fenix and pypilot represent two different design philosophies.
 Fenix is best understood as a self-contained embedded tiller pilot:
+{\small
 \[
-\small
 \begin{gathered}
 \text{Arduino}+\text{ICM-20948}+{}\\
 \text{feedback linear actuator}+\text{NMEA/Bluetooth app}.
 \end{gathered}
 \]
+}
 Its methods are well aligned with that hardware model.  It uses a
 position-feedback actuator, a PID heading controller, speed-adaptive gain
 scaling, explicit deadband, EEPROM commissioning, and direct PWM actuator
@@ -3339,13 +3345,14 @@ drive.  If the actuator feedback is reliable and the boat matches the
 intended installation, Fenix's rudder-position approach is mechanically
 clear and practical.
 pypilot is best understood as an open marine autopilot system:
+{\small
 \[
-\small
 \begin{gathered}
 \text{Linux process}+\text{network value server}+{}\\
 \text{sensor services}+\text{servo controller}.
 \end{gathered}
 \]
+}
 Its methods are more extensible and more network-oriented.  It can support
 multiple clients, remote displays, web interfaces, Signal K integration,
 NMEA bridges, and different pilot algorithms.  Its basic active pilot is
@@ -3353,8 +3360,8 @@ less conventional than Fenix's PID, but its servo controller is more
 general-purpose and more richly supervised.
 The central method difference can be summarized as
 
+{\small
 \[
-\small
 \begin{array}{ll}
 \text{pypilot:} &
 \begin{gathered}[t]
@@ -3369,6 +3376,7 @@ The central method difference can be summarized as
 \end{gathered}
 \end{array}
 \]
+}
 
 For a small Arduino-only autopilot with a known potentiometer-feedback
 linear actuator, Fenix is a coherent and practical design.  For a larger
