@@ -3000,11 +3000,23 @@ pilot command, reads rudder feedback, checks current limits, and directly
 drives the linear actuator through PWM and a direction pin.
 \begin{table*}[!tbp]
 \centering
-\caption{System-level comparison between pypilot and Fenix.}
+\caption{Grouped comparison between pypilot and Fenix.}
+\label{tab:pypilot-fenix-comparison}
 \label{tab:pypilot-fenix-architecture}
+\label{tab:pypilot-fenix-control}
+\label{tab:pypilot-fenix-actuator}
+\label{tab:pypilot-fenix-track}
+\label{tab:pypilot-fenix-protocol}
+\begingroup
+\scriptsize
+\setlength{\tabcolsep}{2.4pt}
+\renewcommand{\arraystretch}{0.96}
 \begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
+\scriptsize
 \toprule
 Aspect & pypilot & Fenix \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{System-level architecture}} \\
 \midrule
 Primary platform &
 Linux/Python autopilot process, commonly on Raspberry Pi, with optional
@@ -3026,8 +3038,89 @@ Configuration model &
 Network-exposed named values, profiles, and runtime-writable properties. &
 EEPROM-stored installation parameters, PID gains, and calibration values
 set through app/NMEA commissioning messages. \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Control-method philosophy}} \\
+\midrule
+Primary controller output &
+Normalized servo/motor command. &
+Desired rudder or tiller position. \\
+Main active heading law &
+Extended PD with heading-rate, heading-acceleration, square-root error,
+and feed-forward terms. &
+PID heading controller with deadband, derivative filtering, speed-adaptive
+gain scaling, integral limiting, and anti-windup. \\
+Integral action &
+Mostly avoided in active basic and wind pilots. &
+Present in the main PID loop, but guarded by anti-windup and actuator
+state checks. \\
+Derivative action &
+Uses measured heading rate and heading rate-of-rate. &
+Uses filtered derivative of the heading-error/input signal. \\
+Small-error behavior &
+Handled by controller gains plus servo pulse/windup logic. &
+Handled by explicit heading deadband and rudder feedback deadband. \\
+Large-error behavior &
+Heading error is clamped before entering the pilot. &
+PID output is limited by maximum rudder range. \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Actuator control}} \\
+\midrule
+Actuator command &
+Normalized motor effort sent to a servo controller. &
+Target rudder position converted to direct PWM/direction drive. \\
+Rudder feedback &
+Optional in the common basic pilot, but supported by the servo layer. &
+Central to normal operation. \\
+Low-level motor interface &
+Binary serial protocol to an Arduino servo controller. &
+Direct Arduino PWM and direction pin. \\
+Small movement handling &
+Servo-period windup, minimum speed, and pulse shaping. &
+Rudder-position deadband, restart threshold, and speed ramping. \\
+Direction reversal &
+Handled in the servo driver with motor protection logic. &
+Explicit stop/delay state before reversing actuator direction. \\
+Electrical protection &
+Current, voltage, temperature, rudder faults, driver timeout, and
+controller flags. &
+INA260 overcurrent/blockage detection plus feedback-limit protection. \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Track mode}} \\
+\midrule
+Route input &
+APB/GPS data. &
+APB data. \\
+Internal correction &
+Track plus proportional XTE correction. &
+Uses external APB course-to-steer. \\
+Waypoint management &
+Less waypoint-state logic in the pilot. &
+Tracks active and next waypoint identifiers and requests confirmation for
+new waypoint changes. \\
+Main limitation &
+XTE law is simple. &
+Relies on external navigator for CTS quality. \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Commissioning and protocol}} \\
+\midrule
+High-level control protocol &
+TCP value protocol using \texttt{name=json} records. &
+NMEA and proprietary \texttt{\$PEMC} sentences over serial/Bluetooth. \\
+Low-level actuator protocol &
+Separate binary serial protocol to servo controller. &
+No separate servo protocol; actuator is driven directly by firmware. \\
+Parameter discovery &
+Clients can watch the \texttt{values} metadata object. &
+Parameters are requested through specific \texttt{\$PEMC} message types. \\
+Persistence &
+Profiles and persistent values in pypilot configuration. &
+EEPROM save commands for installation, PID, and calibration data. \\
+Commissioning style &
+Networked and service-oriented. &
+Embedded marine-instrument style, app/NMEA driven. \\
 \bottomrule
 \end{tabularx}
+\endgroup
 \end{table*}
 \subsection{Control-Law Philosophy}
 The active pypilot basic pilot is an extended proportional--derivative
@@ -3071,38 +3164,6 @@ A second layer then moves the linear actuator until the measured rudder
 position approaches \(\delta_{r,c}\).  This makes Fenix more explicitly a
 rudder-position autopilot, while pypilot's basic pilot is more directly a
 servo-command autopilot.
-\begin{table*}[!tbp]
-\centering
-\caption{Control-method comparison.}
-\label{tab:pypilot-fenix-control}
-\begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
-\toprule
-Aspect & pypilot & Fenix \\
-\midrule
-Primary controller output &
-Normalized servo/motor command. &
-Desired rudder or tiller position. \\
-Main active heading law &
-Extended PD with heading-rate, heading-acceleration, square-root error,
-and feed-forward terms. &
-PID heading controller with deadband, derivative filtering, speed-adaptive
-gain scaling, integral limiting, and anti-windup. \\
-Integral action &
-Mostly avoided in active basic and wind pilots. &
-Present in the main PID loop, but guarded by anti-windup and actuator
-state checks. \\
-Derivative action &
-Uses measured heading rate and heading rate-of-rate. &
-Uses filtered derivative of the heading-error/input signal. \\
-Small-error behavior &
-Handled by controller gains plus servo pulse/windup logic. &
-Handled by explicit heading deadband and rudder feedback deadband. \\
-Large-error behavior &
-Heading error is clamped before entering the pilot. &
-PID output is limited by maximum rudder range. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 \subsection{Speed Adaptation and Deadband}
 Fenix contains a speed-adaptive PID scaling method.  A speed factor is
 computed from the ratio between a reference speed and the current boat
@@ -3171,36 +3232,6 @@ pulses and protects the drive using current, voltage, temperature, rudder
 feedback when available, driver timeout, and fault flags from the Arduino
 servo controller.  This makes pypilot more tolerant of different actuator
 types, while Fenix is more focused on a known feedback linear actuator.
-\begin{table*}[!tbp]
-\centering
-\caption{Actuator-control comparison.}
-\label{tab:pypilot-fenix-actuator}
-\begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
-\toprule
-Aspect & pypilot & Fenix \\
-\midrule
-Actuator command &
-Normalized motor effort sent to a servo controller. &
-Target rudder position converted to direct PWM/direction drive. \\
-Rudder feedback &
-Optional in the common basic pilot, but supported by the servo layer. &
-Central to normal operation. \\
-Low-level motor interface &
-Binary serial protocol to an Arduino servo controller. &
-Direct Arduino PWM and direction pin. \\
-Small movement handling &
-Servo-period windup, minimum speed, and pulse shaping. &
-Rudder-position deadband, restart threshold, and speed ramping. \\
-Direction reversal &
-Handled in the servo driver with motor protection logic. &
-Explicit stop/delay state before reversing actuator direction. \\
-Electrical protection &
-Current, voltage, temperature, rudder faults, driver timeout, and
-controller flags. &
-INA260 overcurrent/blockage detection plus feedback-limit protection. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 \subsection{Heading and Sensor Handling}
 Fenix uses an ICM-20948 IMU with a Mahony AHRS implementation for internal
 heading.  It can also accept external heading through NMEA heading
@@ -3242,30 +3273,6 @@ waypoint identifiers, but the active Fenix track-mode steering path uses
 the APB course-to-steer field as the target bearing.  In practice, this
 delegates more of the navigation calculation to the plotter or navigation
 source.
-\begin{table}[!t]
-\centering
-\caption{Track-mode comparison.}
-\label{tab:pypilot-fenix-track}
-\begin{tabularx}{\columnwidth}{Z{0.20\columnwidth}YY}
-\toprule
-Aspect & pypilot & Fenix \\
-\midrule
-Route input &
-APB/GPS data. &
-APB data. \\
-Internal correction &
-Track plus proportional XTE correction. &
-Uses external APB course-to-steer. \\
-Waypoint management &
-Less waypoint-state logic in the pilot. &
-Tracks active and next waypoint identifiers and requests confirmation for
-new waypoint changes. \\
-Main limitation &
-XTE law is simple. &
-Relies on external navigator for CTS quality. \\
-\bottomrule
-\end{tabularx}
-\end{table}
 \subsection{Wind Mode}
 pypilot has an active wind pilot with its own gains.  It uses heading
 error, heading-rate damping, heading-acceleration damping, and optionally
@@ -3300,32 +3307,6 @@ named values over the TCP value protocol and can be watched or changed by
 clients.  Persistent profiles and runtime values are part of the pypilot
 server model.  The servo controller also has its own binary protocol for
 low-level motor parameters.
-\begin{table*}[!tbp]
-\centering
-\caption{Commissioning and protocol comparison.}
-\label{tab:pypilot-fenix-protocol}
-\begin{tabularx}{\textwidth}{Z{0.18\textwidth}YY}
-\toprule
-Aspect & pypilot & Fenix \\
-\midrule
-High-level control protocol &
-TCP value protocol using \texttt{name=json} records. &
-NMEA and proprietary \texttt{\$PEMC} sentences over serial/Bluetooth. \\
-Low-level actuator protocol &
-Separate binary serial protocol to servo controller. &
-No separate servo protocol; actuator is driven directly by firmware. \\
-Parameter discovery &
-Clients can watch the \texttt{values} metadata object. &
-Parameters are requested through specific \texttt{\$PEMC} message types. \\
-Persistence &
-Profiles and persistent values in pypilot configuration. &
-EEPROM save commands for installation, PID, and calibration data. \\
-Commissioning style &
-Networked and service-oriented. &
-Embedded marine-instrument style, app/NMEA driven. \\
-\bottomrule
-\end{tabularx}
-\end{table*}
 \subsection{Safety and Alarms}
 Fenix contains explicit marine-style alarms.  It raises alarms for
 out-of-course operation, lost external heading, wind changes, and actuator
