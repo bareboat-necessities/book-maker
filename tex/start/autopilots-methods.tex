@@ -46,6 +46,14 @@
 \usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
 
 % Use Times-like fonts if available; otherwise fall back to DejaVu.
+\IfFontExistsTF{Times New Roman}
+  {\setmainfont{Times New Roman}}
+  {%
+    \IfFontExistsTF{TeX Gyre Termes}
+      {\setmainfont{TeX Gyre Termes}}
+      {\setmainfont{DejaVu Serif}}%
+  }
+  
 \IfFontExistsTF{TeX Gyre Termes}
   {\setmainfont{TeX Gyre Termes}}
   {\setmainfont{DejaVu Serif}}
@@ -258,14 +266,14 @@
   \twocolumn[{%
     \vspace*{-0.35in}
     \begin{center}
-      {\fontsize{24}{28}\selectfont\bfseries\@title\par}
+      {\normalfont\rmfamily\bfseries\fontsize{24}{28}\selectfont\@title\par}
       \vspace{0.9em}
-      {\normalsize\@author\par}
+      {\normalfont\normalsize\rmfamily\@author\par}
       \ifx\@date\@empty
         \vspace{0.7em}
       \else
         \vspace{0.4em}
-        {\normalsize\@date\par}
+        {\normalfont\normalsize\rmfamily\@date\par}
         \vspace{0.7em}
       \fi
     \end{center}
