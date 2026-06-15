@@ -20,7 +20,6 @@
 \frenchspacing
 
 % Compact paragraph style: no blank paragraph gaps.
-% Do not use the parskip package for this layout.
 \setlength{\parindent}{1em}
 \setlength{\parskip}{0pt}
 
@@ -66,31 +65,43 @@
 \usepackage{cancel}
 
 % ------------------------------------------------------------
-% Compact section headings
+% Formal compact section headings
 % ------------------------------------------------------------
 \usepackage{titlesec}
 
+% Section numbering:
+% I. Section
+% A. Subsection
+% 1) Subsubsection
+\renewcommand{\thesection}{\Roman{section}}
+\renewcommand{\thesubsection}{\Alph{subsection}}
+\renewcommand{\thesubsubsection}{\arabic{subsubsection}}
+
 \titleformat{\section}
-  {\normalfont\normalsize\bfseries}
+  [block]
+  {\normalfont\normalsize\scshape\centering}
   {\thesection.}
   {0.5em}
   {}
 
 \titleformat{\subsection}
+  [block]
   {\normalfont\normalsize\itshape}
-  {\thesubsection}
+  {\thesubsection.}
   {0.5em}
   {}
 
 \titleformat{\subsubsection}
+  [runin]
   {\normalfont\normalsize\itshape}
-  {\thesubsubsection}
+  {\thesubsubsection)}
   {0.5em}
   {}
+  [. ]
 
 \titlespacing*{\section}
   {0pt}
-  {1.2ex plus 0.4ex minus 0.2ex}
+  {1.4ex plus 0.4ex minus 0.2ex}
   {0.7ex}
 
 \titlespacing*{\subsection}
@@ -99,9 +110,9 @@
   {0.5ex}
 
 \titlespacing*{\subsubsection}
-  {0pt}
+  {\parindent}
   {0.8ex plus 0.2ex minus 0.2ex}
-  {0.4ex}
+  {0.5em}
 
 % ------------------------------------------------------------
 % Compact lists
@@ -236,16 +247,54 @@
 % ------------------------------------------------------------
 % Compact title block
 % ------------------------------------------------------------
-\usepackage{titling}
+\makeatletter
+\renewcommand{\maketitle}{%
+  \twocolumn[{%
+    \vspace*{-0.35in}
+    \begin{center}
+      {\fontsize{24}{28}\selectfont\bfseries\@title\par}
+      \vspace{0.9em}
+      {\normalsize\@author\par}
+      \ifx\@date\@empty
+        \vspace{0.7em}
+      \else
+        \vspace{0.4em}
+        {\normalsize\@date\par}
+        \vspace{0.7em}
+      \fi
+    \end{center}
+  }]%
+}
+\makeatother
 
-\pretitle{\begin{center}\Large\bfseries}
-\posttitle{\par\end{center}\vspace{-0.8em}}
+% ------------------------------------------------------------
+% Abstract and keywords style
+% ------------------------------------------------------------
+\renewenvironment{abstract}
+  {%
+    \par
+    \small
+    \noindent
+    \textbf{\textit{Abstract---}}%
+    \ignorespaces
+  }
+  {%
+    \par
+    \vspace{0.7em}
+  }
 
-\preauthor{\begin{center}\normalsize}
-\postauthor{\par\end{center}\vspace{-1.1em}}
-
-\predate{\begin{center}\normalsize}
-\postdate{\par\end{center}\vspace{-1.0em}}
+\newenvironment{keywords}
+  {%
+    \par
+    \small
+    \noindent
+    \textbf{\textit{Keywords---}}%
+    \ignorespaces
+  }
+  {%
+    \par
+    \vspace{1.0em}
+  }
 
 % ------------------------------------------------------------
 % Common math macros
