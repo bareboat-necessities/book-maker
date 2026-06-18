@@ -7,6 +7,12 @@
 \usepackage{microtype}
 \usepackage{parskip}
 \setlength{\columnsep}{0.25in}
+\setlength{\emergencystretch}{2em}
+\hbadness=10000
+\vbadness=10000
+\hfuzz=1000pt
+\vfuzz=1000pt
+\AtBeginDocument{\hfuzz=1000pt\hbadness=10000\vfuzz=1000pt\vbadness=10000}
 
 % ------------------------------------------------------------
 % Core math
@@ -19,7 +25,7 @@
 % Fonts: LuaLaTeX or XeLaTeX
 % ------------------------------------------------------------
 \usepackage{fontspec}
-\usepackage{unicode-math}
+\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
 
 \setmainfont{DejaVu Serif}
 \setsansfont{DejaVu Sans}
@@ -357,7 +363,7 @@ k_2 = f\left(t_n+\frac{h}{2}, y_n+\frac{h}{2}k_1\right).
 
 \section{Tables}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Example numerical results.}
 \begin{tabular}{lcc}
@@ -372,7 +378,7 @@ RK4   & \num{2.1e-5} & \qty{1.4}{ms} \\
 
 \section{PGF Chart}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \begin{tikzpicture}
 \begin{axis}[
@@ -398,7 +404,7 @@ Place an SVG file in the same folder, for example \texttt{device.svg}.
 The example below is guarded, so the document still builds when the file is
 missing.
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 % Requires: latexmk -lualatex -shell-escape basics.tex
 % Requires Inkscape installed if the SVG actually exists.
